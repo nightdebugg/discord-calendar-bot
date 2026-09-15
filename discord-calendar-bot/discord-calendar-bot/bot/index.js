@@ -1,7 +1,16 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
+
+// Render's free tier only offers "Web Service" (not Background Worker), and Web
+// Services must bind to a port to be considered healthy. This tiny server exists
+// purely to satisfy that check — the Discord bot itself doesn't need it.
+const PORT = process.env.PORT || 3001;
+http.createServer((req, res) => res.end('Bot is running.')).listen(PORT, () => {
+  console.log(`Keep-alive server listening on port ${PORT}`);
+});
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.commands = new Collection();
