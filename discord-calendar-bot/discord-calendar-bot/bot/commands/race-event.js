@@ -1,5 +1,22 @@
-const { SlashCommandBuilder } = require('discord.js');
-const { apiGet, apiWrite, CALENDAR_CHOICES, calendarLabel } = require('../lib/api');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { apiWrite, CALENDAR_CHOICES, calendarLabel } = require('../lib/api');
+
+const COLOR = { f1: 0x6D3CE0, pf: 0x2F5FEA };
+const STATUS_EMOJI = { upcoming: '📅', live: '🔴', done: '🏁' };
+
+function raceEmbed(calendar, round, title, description) {
+  return new EmbedBuilder()
+    .setColor(COLOR[calendar])
+    .setTitle(title)
+    .setDescription(description)
+    .addFields(
+      { name: 'Round', value: `R${round.rd}`, inline: true },
+      { name: 'Location', value: `${round.flag} ${round.country}`, inline: true },
+      { name: 'Status', value: `${STATUS_EMOJI[round.status]} ${round.status}`, inline: true },
+      ...(round.date ? [{ name: 'Date & Time', value: round.date, inline: false }] : []),
+    )
+    .setFooter({ text: calendarLabel(calendar) });
+}
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -33,17 +50,20 @@ module.exports = {
           date: `${date} ${time}`,
           status: 'upcoming',
         });
-        return interaction.reply(`📅 **${calendarLabel(calendar)} R${updated.rd}** (${updated.country}) scheduled for **${updated.date}**.`);
+        const embed = raceEmbed(calendar, updated, '📅 Race Scheduled', `**${updated.country}** is set for **${updated.date}**.`);
+        return interaction.reply({ embeds: [embed] });
       }
 
       if (sub === 'start') {
         const updated = await apiWrite('PATCH', `/api/calendars/${calendar}/rounds/${round}`, { status: 'live' });
-        return interaction.reply(`🔴 **${calendarLabel(calendar)} R${updated.rd}** (${updated.country}) is now **LIVE**.`);
+        const embed = raceEmbed(calendar, updated, '🔴 Race Is LIVE', `**${updated.country}** has gone green. Buckle up!`);
+        return interaction.reply({ embeds: [embed] });
       }
 
       if (sub === 'end') {
         const updated = await apiWrite('PATCH', `/api/calendars/${calendar}/rounds/${round}`, { status: 'done' });
-        return interaction.reply(`🏁 **${calendarLabel(calendar)} R${updated.rd}** (${updated.country}) marked **done**. The website will show this next time someone loads the page.`);
+        const embed = raceEmbed(calendar, updated, '🏁 Race Ended', `**${updated.country}** is in the books. The website updates the next time someone loads it.`);
+        return interaction.reply({ embeds: [embed] });
       }
     } catch (err) {
       console.error(err);
