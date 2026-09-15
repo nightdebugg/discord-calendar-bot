@@ -222,9 +222,9 @@
         <button class="cat-card view-pf" onclick="showView('pf')">
           <div class="cat-era">2001 ERA</div>
           <div class="cat-name">PF</div>
-          <div class="cat-sub">The classic series — twelve rounds of old-school aero and circuits.</div>
+          <div class="cat-sub">The classic series — ten rounds of old-school aero and circuits.</div>
           <div class="cat-meta">
-            <div><div class="num">12</div><div class="lbl">Rounds</div></div>
+            <div><div class="num">10</div><div class="lbl">Rounds</div></div>
             <div><div class="num">12</div><div class="lbl">Drivers</div></div>
           </div>
           <div class="cat-go">Enter PF →</div>
@@ -342,10 +342,10 @@
   <section class="hero">
     <div class="wrap">
       <div class="kicker">SEASON 5 · STARTING SOON</div>
-      <h1>Twelve rounds.<br>Old school aero.<br><span class="accent-text">Full send.</span></h1>
+      <h1>Ten rounds.<br>Old school aero.<br><span class="accent-text">Full send.</span></h1>
       <p>PF is Ace League's 2001-era series — classic cars, classic circuits. Here's where we track the calendar, the standings, and the records that get set along the way.</p>
       <div class="hero-meta">
-        <div><div class="num">12</div><div class="lbl">Rounds this season</div></div>
+        <div><div class="num">10</div><div class="lbl">Rounds this season</div></div>
         <div><div class="num">12</div><div class="lbl">Drivers on the grid</div></div>
         <div><div class="num">R1</div><div class="lbl">Next up — Australia</div></div>
       </div>
@@ -354,7 +354,7 @@
 
   <section id="pf-calendar">
     <div class="wrap">
-      <div class="section-head"><h2>Season 5 Calendar</h2><div class="sub">Twelve rounds of the PF 2001 series.</div></div>
+      <div class="section-head"><h2>Season 5 Calendar</h2><div class="sub">Ten rounds of the PF 2001 series.</div></div>
       <div class="cal-grid" id="pf-cal-grid"></div>
     </div>
   </section>
@@ -473,7 +473,18 @@ const F1_history = [
 ];
 
 // PF_rounds is no longer hardcoded here — it's fetched live from the calendar API.
-let PF_rounds = [];
+let PF_rounds = [
+  {rd:1,  flag:"🇦🇺", country:"Australia",    status:"upcoming"},
+  {rd:2,  flag:"🇨🇳", country:"China",        status:"upcoming"},
+  {rd:3,  flag:"🇯🇵", country:"Japan",        status:"upcoming"},
+  {rd:4,  flag:"🇰🇷", country:"South Korea",  status:"upcoming"},
+  {rd:5,  flag:"🇬🇧", country:"Great Britain", status:"upcoming"},
+  {rd:6,  flag:"🇮🇹", country:"Italy",        status:"upcoming"},
+  {rd:7,  flag:"🇳🇱", country:"Netherlands",  status:"upcoming"},
+  {rd:8,  flag:"🇧🇷", country:"Brazil",       status:"upcoming"},
+  {rd:9,  flag:"🇲🇾", country:"Malaysia",     status:"upcoming"},
+  {rd:10, flag:"🇦🇪", country:"Abu Dhabi",    status:"upcoming"},
+];
 const PF_records = [
   {num:"0", who:"--", desc:"Most points this season"},
   {num:"0", who:"--", desc:"Most race wins this season"},
@@ -577,7 +588,7 @@ renderHistory('pf', PF_history);
 // ---------------- LIVE CALENDAR DATA ----------------
 // Point this at wherever you deploy the server/ folder from the
 // discord-calendar-bot project (Railway, Render, etc). Locally it's:
-const CALENDAR_API_BASE = 'https://calendar-api-1jml.onrender.com';
+const CALENDAR_API_BASE = 'https://calendar-api-v2-2a22.onrender.com';
 
 function statsToRecordCards(stats){
   return [
