@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ace League</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A0A12;
+    --ink-2:#14141F;
+    --ink-3:#1C1C2B;
+    --paper:#ECEAF5;
+    --paper-dim:#8B89A0;
+    --line:#26263A;
+    --blue:#2648E8;
+    --gold:#D9A63E;
+    --silver:#B7B6C4;
+    --bronze:#B0703A;
+    --f1:#6D3CE0;
+    --f1-dim:#3A2A66;
+    --pf:#2F5FEA;
+    --pf-dim:#1B2E66;
+    --discord:#5865F2;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--ink); color:var(--paper);
+    font-family:'Inter', sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.num,.brand,.cat-name{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:800; letter-spacing:.01em; text-transform:uppercase;
+  }
+  a{color:inherit;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 28px;}
+  .hidden{display:none !important;}
+
+  /* scoped accent colors */
+  .view-f1{--accent:var(--f1); --accent-dim:var(--f1-dim);}
+  .view-pf{--accent:var(--pf); --accent-dim:var(--pf-dim);}
+
+  /* ================= HOME ================= */
+  #view-home{min-height:100vh; display:flex; flex-direction:column;}
+  #view-home header{padding:28px 0; border-bottom:1px solid var(--line);}
+  #view-home .brand{font-size:20px; display:flex; align-items:center; gap:9px;}
+  #view-home .brand .dot{width:10px; height:10px; background:linear-gradient(135deg,var(--f1),var(--pf)); border-radius:50%; display:inline-block;}
+  #view-home main{flex:1; display:flex; align-items:center; padding:64px 0;}
+  #view-home .home-wrap{max-width:1000px; margin:0 auto; padding:0 28px; width:100%;}
+  .intro{text-align:center; margin-bottom:52px;}
+  .intro .kicker{color:var(--paper-dim); font-size:14px; font-weight:600; margin-bottom:14px; letter-spacing:.02em;}
+  .intro h1{font-size:clamp(38px, 6vw, 62px); line-height:0.98;}
+  .intro p{color:var(--paper-dim); font-size:16px; max-width:440px; margin:18px auto 0;}
+  .cats{display:grid; grid-template-columns:1fr 1fr; gap:22px;}
+  .cat-card{
+    position:relative; display:block; text-decoration:none; color:inherit;
+    background:var(--ink-2); border:1px solid var(--line); border-radius:8px;
+    padding:36px 28px; overflow:hidden; transition:transform .18s, border-color .18s;
+    cursor:pointer; font:inherit; text-align:left; width:100%;
+  }
+  .cat-card:hover{transform:translateY(-4px); border-color:var(--accent);}
+  .cat-card::before{content:''; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--accent);}
+  .cat-era{font-size:12.5px; color:var(--accent); font-weight:700; letter-spacing:.03em; margin-bottom:10px;}
+  .cat-name{font-size:44px; line-height:1; color:var(--accent);}
+  .cat-sub{font-size:14.5px; color:var(--paper-dim); margin-top:14px; max-width:280px;}
+  .cat-meta{display:flex; gap:24px; margin-top:24px;}
+  .cat-meta .num{font-size:22px;}
+  .cat-meta .lbl{font-size:11.5px; color:var(--paper-dim); margin-top:2px;}
+  .cat-go{margin-top:26px; display:inline-flex; align-items:center; gap:6px; font-size:13.5px; font-weight:600; color:var(--paper);}
+  #view-home footer{padding:26px 0; text-align:center; color:var(--paper-dim); font-size:13px; border-top:1px solid var(--line);}
+  #view-home footer a{color:var(--discord); text-decoration:none; font-weight:600;}
+  @media (max-width:640px){ .cats{grid-template-columns:1fr;} }
+
+  /* ================= SERIES PAGES (F1 / PF) ================= */
+  .series header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(10,10,18,0.92); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .series nav.wrap{display:flex; align-items:center; justify-content:space-between; height:64px;}
+  .series .brand{font-size:20px; display:flex; align-items:center; gap:9px; cursor:pointer; border:none; background:none; color:inherit; font-family:'Big Shoulders Display'; text-transform:uppercase; font-weight:800; letter-spacing:.01em; padding:0;}
+  .series .brand .dot{width:10px; height:10px; background:var(--accent); border-radius:50%; display:inline-block;}
+  .series .brand .sub{font-family:'Inter'; text-transform:none; font-weight:500; font-size:12.5px; color:var(--paper-dim); letter-spacing:0;}
+  .nav-right{display:flex; align-items:center; gap:20px;}
+  .navlinks{display:flex; gap:6px;}
+  .navlinks button{
+    background:none; border:none; color:var(--paper-dim);
+    font-family:'Inter'; font-size:14px; font-weight:500;
+    padding:8px 14px; border-radius:4px; cursor:pointer; transition:color .15s;
+  }
+  .navlinks button:hover{color:var(--paper);}
+  .discord-btn{
+    background:var(--accent); color:#fff; text-decoration:none;
+    font-family:'Inter'; font-weight:600; font-size:13.5px;
+    padding:9px 16px; border-radius:5px; white-space:nowrap; transition:opacity .15s;
+    border:none; cursor:pointer; display:inline-block;
+  }
+  .discord-btn:hover{opacity:.85;}
+
+  .hero{padding:88px 0 60px; border-bottom:1px solid var(--line);}
+  .hero .kicker{color:var(--accent); font-weight:700; font-size:14px; margin-bottom:14px;}
+  .hero h1{font-size:clamp(44px, 7.5vw, 84px); line-height:0.94; max-width:760px;}
+  .hero h1 .accent-text{color:var(--accent);}
+  .hero p{max-width:480px; margin-top:22px; color:var(--paper-dim); font-size:16.5px;}
+  .hero-meta{display:flex; gap:36px; margin-top:44px; flex-wrap:wrap;}
+  .hero-meta .num{font-size:36px; color:var(--gold); line-height:1;}
+  .hero-meta .lbl{font-size:12.5px; color:var(--paper-dim); margin-top:4px;}
+
+  .series section{padding:76px 0; border-bottom:1px solid var(--line);}
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:36px; flex-wrap:wrap; gap:10px;}
+  .section-head h2{font-size:32px;}
+  .section-head .sub{color:var(--paper-dim); font-size:13.5px; max-width:340px; text-align:right;}
+
+  .cal-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px 16px;}
+  .cal-item{display:grid; grid-template-columns:76px 1fr; border-radius:4px; overflow:hidden;}
+  .cal-rd{background:var(--blue); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Big Shoulders Display'; font-size:22px; font-weight:800;}
+  .cal-info{background:var(--ink-3); display:flex; align-items:center; gap:12px; padding:0 16px;}
+  .cal-flag{font-size:22px;}
+  .cal-country{font-weight:600; font-size:15px; color:#7C93FF;}
+  .cal-item.live .cal-rd{background:var(--accent);}
+  .cal-item.live .cal-country{color:var(--accent);}
+  .cal-item.done{opacity:0.45;}
+
+  .records-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line);}
+  .record-card{background:var(--ink); padding:24px 20px;}
+  .record-card .num{font-size:40px; color:var(--accent); line-height:1;}
+  .record-card .desc{font-size:13px; color:var(--paper-dim); margin-top:8px;}
+  .record-card .who{font-size:14px; margin-top:2px; font-weight:600;}
+
+  .standings-scroll{overflow-x:auto; border:1px solid var(--line); border-radius:4px;}
+  table.standings{border-collapse:collapse; font-size:13.5px; min-width:900px; width:100%;}
+  table.standings th{text-align:left; font-weight:600; color:var(--paper-dim); font-size:11.5px; letter-spacing:.03em; padding:12px 10px; border-bottom:1px solid var(--line); background:var(--ink-2); position:sticky; top:0;}
+  table.standings th.race{text-align:center; font-size:16px;}
+  table.standings td{padding:11px 10px; border-bottom:1px solid var(--line); white-space:nowrap;}
+  table.standings tr:last-child td{border-bottom:none;}
+  table.standings tr.leader{background:var(--accent-dim);}
+  td.pos{font-family:'Big Shoulders Display'; font-size:17px; color:var(--paper-dim); text-align:center;}
+  tr.leader td.pos{color:#fff;}
+  td.drivernum{font-family:'Big Shoulders Display'; font-size:16px; color:var(--paper-dim); padding-right:4px;}
+  td.driver{font-weight:600;}
+  td.team{color:var(--paper-dim);}
+  td.pts{font-family:'Big Shoulders Display'; font-size:17px;}
+  td.dif{color:var(--paper-dim);}
+  td.race{text-align:center; color:var(--paper-dim);}
+  .p1,.p2,.p3{display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; border:2px solid; font-size:12.5px; font-weight:600;}
+  .p1{border-color:var(--gold); color:var(--gold);}
+  .p2{border-color:var(--silver); color:var(--silver);}
+  .p3{border-color:var(--bronze); color:var(--bronze);}
+  .out{color:#7a4040; font-size:11px; font-weight:600;}
+  .standings-note{font-size:12.5px; color:var(--paper-dim); margin-top:14px;}
+
+  .driver-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  .driver-card{
+    position:relative; background:var(--ink-2); border:1px solid var(--line);
+    border-radius:6px; padding:20px 20px 18px; overflow:hidden;
+  }
+  .driver-card::before{content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--accent);}
+  .driver-card .dnum{font-family:'Big Shoulders Display'; font-size:14px; color:var(--accent); letter-spacing:.02em;}
+  .driver-card .dname{font-size:19px; font-weight:700; margin-top:6px; display:flex; align-items:center; gap:8px;}
+  .driver-card .dteam{color:var(--paper-dim); font-size:13.5px; margin-top:4px;}
+  @media (max-width:900px){ .driver-grid{grid-template-columns:1fr 1fr;} }
+  @media (max-width:560px){ .driver-grid{grid-template-columns:1fr;} }
+
+  .history-grid{display:flex; flex-direction:column; gap:16px;}
+  .season-card{background:var(--ink-2); border:1px solid var(--line); border-radius:6px; padding:24px 26px;}
+  .season-card .shead{display:flex; align-items:baseline; gap:10px; margin-bottom:16px;}
+  .season-card .snum{font-family:'Big Shoulders Display'; font-size:28px; color:var(--accent);}
+  .season-card .slabel{font-size:13px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.03em;}
+  .award-list{display:grid; grid-template-columns:1fr 1fr; gap:10px 24px;}
+  .award-row{display:flex; justify-content:space-between; gap:12px; font-size:14px; padding:8px 0; border-bottom:1px solid var(--line);}
+  .award-row .alabel{color:var(--paper-dim);}
+  .award-row .avalue{font-weight:600; text-align:right;}
+  @media (max-width:640px){ .award-list{grid-template-columns:1fr;} }
+
+  .about-grid{display:grid; grid-template-columns:1.1fr 0.9fr; gap:60px;}
+  .about-grid h3{font-size:19px; margin-bottom:14px; color:var(--accent);}
+  .about-grid p{color:var(--paper-dim); font-size:15px; margin-bottom:20px; max-width:480px;}
+  .crew{list-style:none;}
+  .crew li{padding:14px 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; font-size:14.5px;}
+  .crew li:last-child{border-bottom:none;}
+  .crew .role{color:var(--paper-dim); font-size:13px;}
+  .join-box{margin-top:26px; padding:22px; border:1px solid var(--line); background:var(--ink-2);}
+  .join-box p{margin-bottom:16px; font-size:14.5px;}
+
+  .series footer{padding:30px 0; text-align:center; color:var(--paper-dim); font-size:13px;}
+
+  @media (max-width: 720px){
+    .cal-grid{grid-template-columns:1fr;}
+    .records-grid{grid-template-columns:repeat(2,1fr);}
+    .about-grid{grid-template-columns:1fr; gap:40px;}
+    .navlinks{display:none;}
+    .section-head .sub{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= HOME VIEW ================= -->
+<div id="view-home">
+  <header><div class="home-wrap brand"><span class="dot"></span>ACE LEAGUE</div></header>
+  <main>
+    <div class="home-wrap">
+      <div class="intro">
+        <div class="kicker">CHOOSE A SERIES</div>
+        <h1>Two grids.<br>One league.</h1>
+        <p>Ace League runs two Roblox racing series side by side. Pick one to see its calendar, standings, and records.</p>
+      </div>
+      <div class="cats">
+        <button class="cat-card view-f1" onclick="showView('f1')">
+          <div class="cat-era">2008 ERA</div>
+          <div class="cat-name">F1</div>
+          <div class="cat-sub">The modern-spec series — ten rounds, current-gen cars and circuits.</div>
+          <div class="cat-meta">
+            <div><div class="num">10</div><div class="lbl">Rounds</div></div>
+            <div><div class="num">15</div><div class="lbl">Drivers</div></div>
+          </div>
+          <div class="cat-go">Enter F1 →</div>
+        </button>
+        <button class="cat-card view-pf" onclick="showView('pf')">
+          <div class="cat-era">2001 ERA</div>
+          <div class="cat-name">PF</div>
+          <div class="cat-sub">The classic series — twelve rounds of old-school aero and circuits.</div>
+          <div class="cat-meta">
+            <div><div class="num">12</div><div class="lbl">Rounds</div></div>
+            <div><div class="num">12</div><div class="lbl">Drivers</div></div>
+          </div>
+          <div class="cat-go">Enter PF →</div>
+        </button>
+      </div>
+    </div>
+  </main>
+  <footer class="home-wrap">Ace League — a fan-run Roblox racing community. <a href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join the Discord</a></footer>
+</div>
+
+<!-- ================= F1 VIEW ================= -->
+<div id="view-f1" class="series view-f1 hidden">
+  <header>
+    <nav class="wrap">
+      <button class="brand" onclick="showView('home')"><span class="dot"></span>ACE LEAGUE<span class="sub">— F1 2008 · S5</span></button>
+      <div class="nav-right">
+        <div class="navlinks">
+          <button data-scroll="f1-calendar">Calendar</button>
+          <button data-scroll="f1-records">Records</button>
+          <button data-scroll="f1-standings">Standings</button>
+          <button data-scroll="f1-history">History</button>
+          <button data-scroll="f1-about">About</button>
+        </div>
+        <a class="discord-btn" href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join Discord</a>
+      </div>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="kicker">SEASON 5 · STARTING SOON</div>
+      <h1>Ten rounds.<br>One grid.<br><span class="accent-text">No mercy.</span></h1>
+      <p>Ace League is a Roblox F1 racing community — real drivers, real drama, season after season. Here's where we track the calendar, the standings, and the records that get set along the way.</p>
+      <div class="hero-meta">
+        <div><div class="num">10</div><div class="lbl">Rounds this season</div></div>
+        <div><div class="num">15</div><div class="lbl">Drivers on the grid</div></div>
+        <div><div class="num">R1</div><div class="lbl">Next up — Australia</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="f1-calendar">
+    <div class="wrap">
+      <div class="section-head"><h2>Season 5 Calendar</h2><div class="sub">Ten rounds across five months of racing.</div></div>
+      <div class="cal-grid" id="f1-cal-grid"></div>
+    </div>
+  </section>
+
+  <section id="f1-records">
+    <div class="wrap">
+      <div class="section-head"><h2>League Records</h2><div class="sub">Placeholders — swap in the real numbers once S5 wraps up.</div></div>
+      <div class="records-grid" id="f1-records-grid"></div>
+    </div>
+  </section>
+
+  <section id="f1-standings">
+    <div class="wrap">
+      <div class="section-head"><h2>The Grid</h2><div class="sub">Every driver racing this season.</div></div>
+      <div class="driver-grid" id="f1-driver-grid"></div>
+      <div class="standings-note">Placeholder data — replace driver names, numbers, and teams with your real league once you send them over.</div>
+    </div>
+  </section>
+
+  <section id="f1-history">
+    <div class="wrap">
+      <div class="section-head"><h2>Season History</h2><div class="sub">Past champions and award holders.</div></div>
+      <div class="history-grid" id="f1-history-grid"></div>
+    </div>
+  </section>
+
+  <section id="f1-about">
+    <div class="wrap">
+      <div class="section-head"><h2>About Us</h2></div>
+      <div class="about-grid">
+        <div>
+          <h3>Who we are</h3>
+          <p>Ace League is a Roblox F1 community built by racers, for racers. We run full seasons, keep the standings honest, and argue about strategy in the group chat between rounds.</p>
+          <h3>What we do</h3>
+          <p>Race-day hosting, season standings, and a running record book. Replace this text and the crew list below with your own — this section is yours to make personal.</p>
+          <ul class="crew">
+            <li>Founder &amp; League Admin <span class="role">Rodion</span></li>
+            <li>Race Steward <span class="role">Open role</span></li>
+            <li>Standings &amp; Stats <span class="role">Open role</span></li>
+          </ul>
+        </div>
+        <div class="join-box">
+          <p>Join Ace League on Discord — race-day pings, standings updates, and the group chat where it all happens.</p>
+          <a class="discord-btn" style="display:block; text-align:center; padding:13px;" href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join the Discord</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="wrap">Ace League — a fan-run Roblox F1 community. Not affiliated with Formula 1, FIA, Roblox Corporation, or any real team.</footer>
+</div>
+
+<!-- ================= PF VIEW ================= -->
+<div id="view-pf" class="series view-pf hidden">
+  <header>
+    <nav class="wrap">
+      <button class="brand" onclick="showView('home')"><span class="dot"></span>ACE LEAGUE<span class="sub">— PF 2001 · S5</span></button>
+      <div class="nav-right">
+        <div class="navlinks">
+          <button data-scroll="pf-calendar">Calendar</button>
+          <button data-scroll="pf-records">Records</button>
+          <button data-scroll="pf-standings">Standings</button>
+          <button data-scroll="pf-history">History</button>
+          <button data-scroll="pf-about">About</button>
+        </div>
+        <a class="discord-btn" href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join Discord</a>
+      </div>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="kicker">SEASON 5 · STARTING SOON</div>
+      <h1>Twelve rounds.<br>Old school aero.<br><span class="accent-text">Full send.</span></h1>
+      <p>PF is Ace League's 2001-era series — classic cars, classic circuits. Here's where we track the calendar, the standings, and the records that get set along the way.</p>
+      <div class="hero-meta">
+        <div><div class="num">12</div><div class="lbl">Rounds this season</div></div>
+        <div><div class="num">12</div><div class="lbl">Drivers on the grid</div></div>
+        <div><div class="num">R1</div><div class="lbl">Next up — Australia</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pf-calendar">
+    <div class="wrap">
+      <div class="section-head"><h2>Season 5 Calendar</h2><div class="sub">Twelve rounds of the PF 2001 series.</div></div>
+      <div class="cal-grid" id="pf-cal-grid"></div>
+    </div>
+  </section>
+
+  <section id="pf-records">
+    <div class="wrap">
+      <div class="section-head"><h2>League Records</h2><div class="sub">Placeholders — swap in the real numbers once S5 wraps up.</div></div>
+      <div class="records-grid" id="pf-records-grid"></div>
+    </div>
+  </section>
+
+  <section id="pf-standings">
+    <div class="wrap">
+      <div class="section-head"><h2>The Grid</h2><div class="sub">Every driver racing this season.</div></div>
+      <div class="driver-grid" id="pf-driver-grid"></div>
+      <div class="standings-note">Placeholder data — replace driver names, numbers, and teams with your real league once you send them over.</div>
+    </div>
+  </section>
+
+  <section id="pf-history">
+    <div class="wrap">
+      <div class="section-head"><h2>Season History</h2><div class="sub">Past champions and award holders.</div></div>
+      <div class="history-grid" id="pf-history-grid"></div>
+    </div>
+  </section>
+
+  <section id="pf-about">
+    <div class="wrap">
+      <div class="section-head"><h2>About Us</h2></div>
+      <div class="about-grid">
+        <div>
+          <h3>Who we are</h3>
+          <p>Ace League is a Roblox racing community built by racers, for racers. PF is our 2001-era series, run alongside F1 — we keep the standings honest and argue about strategy in the group chat between rounds.</p>
+          <h3>What we do</h3>
+          <p>Race-day hosting, season standings, and a running record book. Replace this text and the crew list below with your own — this section is yours to make personal.</p>
+          <ul class="crew">
+            <li>Founder &amp; League Admin <span class="role">Rodion</span></li>
+            <li>Race Steward <span class="role">Open role</span></li>
+            <li>Standings &amp; Stats <span class="role">Open role</span></li>
+          </ul>
+        </div>
+        <div class="join-box">
+          <p>Join Ace League on Discord — race-day pings, standings updates, and the group chat where it all happens.</p>
+          <a class="discord-btn" style="display:block; text-align:center; padding:13px;" href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join the Discord</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="wrap">Ace League — a fan-run Roblox racing community. Not affiliated with Formula 1, FIA, Roblox Corporation, or any real team.</footer>
+</div>
+
+<script>
+// ---------------- DATA ----------------
+// F1_rounds is no longer hardcoded here — it's fetched live from the calendar API
+// (see CALENDAR_API_BASE and loadCalendars() near the bottom of this script).
+let F1_rounds = [];
+const F1_records = [
+  {num:"0", who:"--", desc:"Most points this season"},
+  {num:"0", who:"--", desc:"Most race wins this season"},
+  {num:"--", who:"--", desc:"Tightest title margin"},
+  {num:"0", who:"--", desc:"Retirements (OUT) so far"},
+];
+// F1_drivers below is the fallback shown before the live API data loads
+// (or if the API is unreachable). loadCalendars() overwrites it with real
+// standings — points, wins, poles, penalties — once it fetches successfully.
+let F1_drivers = [
+  {pos:1, num:23, flag:"🇷🇴", name:"Mattix",        team:"Ferrari",      pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
+  {pos:2, num:95, flag:"🇷🇴", name:"Anroux",        team:"McLaren",      pts:0, dif:"--",  results:[null,null,null,null,null,null,null,null,null,null]},
+  {pos:3, num:28, flag:"🇺🇸", name:"Jountup",       team:"Toyota",       pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
+  {pos:4, num:6,  flag:"🇪🇸", name:"Reisa",         team:"Force India",  pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
+  {pos:5, num:37, flag:"🇮🇹", name:"Antony",        team:"McLaren",      pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
+  {pos:6, num:77, flag:"🇧🇬", name:"Martin Hristev", team:"Red Bull",    pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
+  {pos:7, num:76, flag:"🇪🇸", name:"robotic ray",   team:"Red Bull",     pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
+  {pos:8, num:11, flag:"🇵🇱", name:"eric",          team:"BMW Sauber",   pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
+  {pos:9, num:78, flag:"🇮🇹", name:"Amed Sylla",    team:"Williams",     pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
+  {pos:10,num:89, flag:"🇬🇧", name:"blue",          team:"Toro Rosso",   pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
+  {pos:11,num:16, flag:"🇮🇩", name:"Khrom",         team:"Renault",      pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
+  {pos:12,num:15, flag:"🇷🇸", name:"Cevap",         team:"Honda",        pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
+  {pos:13,num:13, flag:"🇨🇱", name:"Gamero",        team:"Force India",  pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
+  {pos:14,num:33, flag:"",   name:"BLACK",          team:"Ferrari",      pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
+  {pos:15,num:99, flag:"🇱🇻", name:"Arman",         team:"BMW Sauber",   pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
+];
+
+const F1_history = [
+  {season:4, awards:[
+    {label:"WDC", value:"rice"},
+    {label:"WCC", value:"Toyota"},
+    {label:"Most Fastest Laps", value:"rice"},
+    {label:"Most Poles", value:"rice"},
+    {label:"Driver of the Day", value:"gamerogames"},
+    {label:"Most Positions Gained", value:"Mattix"},
+  ]},
+  {season:3, awards:[
+    {label:"WDC", value:"Lewis"},
+    {label:"WCC", value:"Toyota"},
+    {label:"Most Fastest Laps", value:"Lewis"},
+    {label:"Most Poles", value:"Lewis"},
+    {label:"Driver of the Day", value:"gamerogames / Mattix (Tie)"},
+    {label:"Most Positions Gained", value:"Mattix"},
+  ]},
+  {season:2, awards:[
+    {label:"WDC", value:"Velzxzzz"},
+    {label:"WCC", value:"Williams"},
+    {label:"Most Fastest Laps", value:"Velzxzzz"},
+    {label:"Most Poles", value:"Velzxzzz"},
+    {label:"Driver of the Day", value:"Velzxzzz"},
+    {label:"Most Positions Gained", value:"! Mithser_."},
+  ]},
+  {season:1, awards:[
+    {label:"WDC", value:"rice"},
+    {label:"WCC", value:"Toyota"},
+    {label:"Most Fastest Laps", value:"rice"},
+    {label:"Most Poles", value:"rice"},
+  ]},
+];
+
+// PF_rounds is no longer hardcoded here — it's fetched live from the calendar API.
+let PF_rounds = [];
+const PF_records = [
+  {num:"0", who:"--", desc:"Most points this season"},
+  {num:"0", who:"--", desc:"Most race wins this season"},
+  {num:"--", who:"--", desc:"Tightest title margin"},
+  {num:"0", who:"--", desc:"Retirements (OUT) so far"},
+];
+let PF_drivers = [
+  {pos:1,  num:11, flag:"🇵🇱", name:"eric",       team:"McLaren",      pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
+  {pos:2,  num:15, flag:"🇷🇸", name:"Cevap",      team:"Aston Martin", pts:0, dif:"--",  results:[null,null,null,null,null,null,null,null,null,null,null,null]},
+  {pos:3,  num:47, flag:"🇬🇧", name:"Swept",      team:"Aston Martin", pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
+  {pos:4,  num:28, flag:"🇺🇸", name:"Jountup",    team:"Toro Rosso",   pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
+  {pos:5,  num:99, flag:"🇬🇧", name:"Jeffz",      team:"Red Bull",     pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
+  {pos:6,  num:78, flag:"🇮🇹", name:"Amed Sylla", team:"McLaren",      pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
+  {pos:7,  num:96, flag:"🇬🇧", name:"Stellar",    team:"Williams",     pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
+  {pos:8,  num:67, flag:"🇷🇴", name:"Mattix",     team:"Sauber",       pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
+  {pos:9,  num:37, flag:"🇮🇹", name:"Antony",     team:"Ferrari",      pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
+  {pos:10, num:95, flag:"🇮🇹", name:"Arnoux",     team:"Ferrari",      pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
+  {pos:11, num:13, flag:"🇨🇱", name:"Gamero",     team:"Mercedes",     pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
+  {pos:12, num:5,  flag:"🇵🇱", name:"Khrom",      team:"Manor",        pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
+];
+
+// PF season history — send over the Season 1-4 award data and this will fill in the same way as F1.
+const PF_history = [];
+
+// ---------------- RENDER ----------------
+function renderCell(cell){
+  if(cell === null || cell === undefined) return '--';
+  if(cell === 'OUT') return '<span class="out">OUT</span>';
+  if(typeof cell === 'object'){
+    if(cell.p === 1) return `<span class="p1">${cell.v}</span>`;
+    if(cell.p === 2) return `<span class="p2">${cell.v}</span>`;
+    if(cell.p === 3) return `<span class="p3">${cell.v}</span>`;
+    return cell.v;
+  }
+  if(cell === '1') return '<span class="p1">1</span>';
+  if(cell === '2') return '<span class="p2">2</span>';
+  if(cell === '3') return '<span class="p3">3</span>';
+  return cell;
+}
+
+function renderCalendar(prefix, rounds){
+  document.getElementById(`${prefix}-cal-grid`).innerHTML = rounds.map(r => `
+    <div class="cal-item ${r.status}">
+      <div class="cal-rd">R${r.rd}</div>
+      <div class="cal-info"><span class="cal-flag">${r.flag}</span><span class="cal-country">${r.country}</span></div>
+    </div>
+  `).join('');
+}
+
+function renderRecords(prefix, records){
+  document.getElementById(`${prefix}-records-grid`).innerHTML = records.map(r => `
+    <div class="record-card">
+      <div class="num">${r.num}</div>
+      <div class="who">${r.who}</div>
+      <div class="desc">${r.desc}</div>
+    </div>
+  `).join('');
+}
+
+function renderDriverGrid(prefix, drivers, sortByPoints){
+  const roster = sortByPoints
+    ? [...drivers].sort((a, b) => (b.pts || 0) - (a.pts || 0))
+    : [...drivers].sort((a, b) => a.name.localeCompare(b.name));
+  document.getElementById(`${prefix}-driver-grid`).innerHTML = roster.map(d => `
+    <div class="driver-card">
+      <div class="dnum">#${d.num}</div>
+      <div class="dname">${d.flag} ${d.name}</div>
+      <div class="dteam">${d.team}</div>
+      ${d.pts !== undefined ? `<div class="dteam">${d.pts} pts${d.wins ? ` · ${d.wins}W` : ''}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderSeries(prefix, rounds, records, drivers){
+  renderCalendar(prefix, rounds);
+  renderRecords(prefix, records);
+  renderDriverGrid(prefix, drivers, false);
+}
+
+function renderHistory(prefix, history){
+  const el = document.getElementById(`${prefix}-history-grid`);
+  if(!history || history.length === 0){
+    el.innerHTML = `<div class="standings-note">Season history coming soon.</div>`;
+    return;
+  }
+  el.innerHTML = history.map(s => `
+    <div class="season-card">
+      <div class="shead"><div class="snum">S${s.season}</div><div class="slabel">Season ${s.season} Results</div></div>
+      <div class="award-list">
+        ${s.awards.map(a => `<div class="award-row"><span class="alabel">${a.label}</span><span class="avalue">${a.value}</span></div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+renderSeries('f1', F1_rounds, F1_records, F1_drivers);
+renderSeries('pf', PF_rounds, PF_records, PF_drivers);
+renderHistory('f1', F1_history);
+renderHistory('pf', PF_history);
+
+// ---------------- LIVE CALENDAR DATA ----------------
+// Point this at wherever you deploy the server/ folder from the
+// discord-calendar-bot project (Railway, Render, etc). Locally it's:
+const CALENDAR_API_BASE = 'http://localhost:3000';
+
+function statsToRecordCards(stats){
+  return [
+    { num: stats.wdcLeader ? stats.wdcLeader.pts : '0', who: stats.wdcLeader ? stats.wdcLeader.name : '--', desc: 'Most points this season' },
+    { num: stats.mostWins ? stats.mostWins.wins : '0', who: stats.mostWins ? stats.mostWins.name : '--', desc: 'Most race wins this season' },
+    { num: stats.marginTop2 !== null ? stats.marginTop2 : '--', who: '', desc: 'Tightest title margin' },
+    { num: stats.retirements, who: '--', desc: 'Retirements (OUT) so far' },
+  ];
+}
+
+async function loadSeries(prefix, calendar){
+  const [rounds, drivers, stats] = await Promise.all([
+    fetch(`${CALENDAR_API_BASE}/api/calendars/${calendar}/rounds`).then(r => r.json()),
+    fetch(`${CALENDAR_API_BASE}/api/calendars/${calendar}/drivers`).then(r => r.json()),
+    fetch(`${CALENDAR_API_BASE}/api/calendars/${calendar}/stats`).then(r => r.json()),
+  ]);
+  if(prefix === 'f1'){ F1_rounds = rounds; F1_drivers = drivers; }
+  else { PF_rounds = rounds; PF_drivers = drivers; }
+  renderCalendar(prefix, rounds);
+  renderDriverGrid(prefix, drivers, true); // true = sort by points (live standings order)
+  renderRecords(prefix, statsToRecordCards(stats));
+}
+
+async function loadCalendars(){
+  try{
+    await Promise.all([loadSeries('f1', 'f1'), loadSeries('pf', 'pf')]);
+  }catch(err){
+    // API unreachable (not deployed yet, wrong URL, server asleep, etc) —
+    // the page keeps working with the placeholder data, it just won't show live updates.
+    console.warn('Could not load live calendar/standings data:', err);
+  }
+}
+
+loadCalendars();
+
+document.querySelectorAll('.navlinks button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.getElementById(btn.dataset.scroll).scrollIntoView({behavior:'smooth'});
+  });
+});
+
+
+function showView(name){
+  document.getElementById('view-home').classList.toggle('hidden', name !== 'home');
+  document.getElementById('view-f1').classList.toggle('hidden', name !== 'f1');
+  document.getElementById('view-pf').classList.toggle('hidden', name !== 'pf');
+  window.scrollTo(0,0);
+}
+
+showView('home');
+</script>
+
+</body>
+</html>
