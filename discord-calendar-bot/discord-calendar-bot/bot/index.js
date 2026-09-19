@@ -1,71 +1,69 @@
-require('dotenv').config();
-const fs = require('fs');
-const path = require('path');
-const http = require('http');
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
+const { apiWrite, findDriverByName, CALENDAR_CHOICES, calendarLabel } = require('../lib/api');
 
-// Render's free tier only offers "Web Service" (not Background Worker), and Web
-// Services must bind to a port to be considered healthy. This tiny server exists
-// purely to satisfy that check — the Discord bot itself doesn't need it.
-const PORT = process.env.PORT || 3001;
-http.createServer((req, res) => res.end('Bot is running.')).listen(PORT, () => {
-  console.log(`Keep-alive server listening on port ${PORT}`);
-});
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('roster')
+    .setDescription('Add, rename, or remove a driver')
+    .addSubcommand(sub =>
+      sub.setName('add').setDescription('Add a new driver to a calendar')
+        .addStringOption(opt => opt.setName('calendar').setDescription('Which calendar').setRequired(true).addChoices(...CALENDAR_CHOICES))
+        .addStringOption(opt => opt.setName('number').setDescription('Car number, e.g. 44').setRequired(true))
+        .addStringOption(opt => opt.setName('name').setDescription("Driver's name").setRequired(true))
+        .addStringOption(opt => opt.setName('team').setDescription('Team name').setRequired(true))
+        .addStringOption(opt => opt.setName('flag').setDescription('Flag emoji').setRequired(false)))
+    .addSubcommand(sub =>
+      sub.setName('edit').setDescription("Change a driver's name, team, or flag")
+        .addStringOption(opt => opt.setName('calendar').setDescription('Which calendar').setRequired(true).addChoices(...CALENDAR_CHOICES))
+        .addStringOption(opt => opt.setName('driver').setDescription('Current driver name').setRequired(true))
+        .addStringOption(opt => opt.setName('name').setDescription('New name').setRequired(false))
+        .addStringOption(opt => opt.setName('team').setDescription('New team').setRequired(false))
+        .addStringOption(opt => opt.setName('flag').setDescription('New flag emoji').setRequired(false)))
+    .addSubcommand(sub =>
+      sub.setName('remove').setDescription('Remove a driver from a calendar entirely')
+        .addStringOption(opt => opt.setName('calendar').setDescription('Which calendar').setRequired(true).addChoices(...CALENDAR_CHOICES))
+        .addStringOption(opt => opt.setName('driver').setDescription('Driver name to remove').setRequired(true))),
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-client.commands = new Collection();
+  async execute(interaction) {
+    const sub = interaction.options.getSubcommand();
+    const calendar = interaction.options.getString('calendar');
 
-const commandsPath = path.join(__dirname, 'commands');
-for (const file of fs.readdirSync(commandsPath).filter(f => f.endsWith('.js'))) {
-  const command = require(path.join(commandsPath, file));
-  client.commands.set(command.data.name, command);
-}
+    try {
+      if (sub === 'add') {
+        const number = interaction.options.getString('number');
+        const name = interaction.options.getString('name');
+        const team = interaction.options.getString('team');
+        const flag = interaction.options.getString('flag') || '';
+        const created = await apiWrite('POST', `/api/calendars/${calendar}/drivers`, { num: number, name, team, flag });
+        return interaction.reply(`✅ Added **${created.flag} ${created.name}** #${created.num} (${created.team}) to ${calendarLabel(calendar)}.`);
+      }
 
-client.once('ready', () => {
-  console.log(`Logged in as ${client.user.tag}`);
-});
+      if (sub === 'edit') {
+        const driverName = interaction.options.getString('driver');
+        const name = interaction.options.getString('name');
+        const team = interaction.options.getString('team');
+        const flag = interaction.options.getString('flag');
+        if (!name && !team && !flag) {
+          return interaction.reply({ content: 'Provide at least one of name, team, or flag to change.', ephemeral: true });
+        }
+        const driver = await findDriverByName(calendar, driverName);
+        const body = {};
+        if (name) body.name = name;
+        if (team) body.team = team;
+        if (flag) body.flag = flag;
+        const updated = await apiWrite('PATCH', `/api/calendars/${calendar}/drivers/${driver.num}`, body);
+        return interaction.reply(`✅ Updated #${updated.num} → **${updated.flag} ${updated.name}** (${updated.team})`);
+      }
 
-// If the Discord connection errors out, log it — discord.js usually auto-reconnects,
-// but we don't want a silent failure to leave the bot showing offline forever.
-client.on('error', (err) => console.error('Discord client error:', err));
-client.on('shardError', (err) => console.error('Shard error:', err));
-process.on('unhandledRejection', (err) => console.error('Unhandled rejection:', err));
-
-// Watchdog: every 5 minutes, check the Discord connection is actually alive.
-// If it's been down for two checks in a row, exit the process — Render/most hosts
-// automatically restart a crashed process, which reconnects cleanly. This catches
-// the case where the Node process itself is fine (so pings still succeed) but the
-// Discord gateway connection silently died and never came back.
-let unhealthyStreak = 0;
-setInterval(() => {
-  if (client.isReady()) {
-    unhealthyStreak = 0;
-    return;
-  }
-  unhealthyStreak++;
-  console.warn(`Discord client not ready (streak: ${unhealthyStreak})`);
-  if (unhealthyStreak >= 2) {
-    console.error('Discord client unhealthy for too long — exiting so the host restarts the process.');
-    process.exit(1);
-  }
-}, 5 * 60 * 1000);
-
-client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
-  const command = client.commands.get(interaction.commandName);
-  if (!command) return;
-
-  try {
-    await command.execute(interaction);
-  } catch (err) {
-    console.error(err);
-    const payload = { content: 'There was an error running that command.', ephemeral: true };
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp(payload);
-    } else {
-      await interaction.reply(payload);
+      if (sub === 'remove') {
+        const driverName = interaction.options.getString('driver');
+        const driver = await findDriverByName(calendar, driverName);
+        const removed = await apiWrite('DELETE', `/api/calendars/${calendar}/drivers/${driver.num}`);
+        return interaction.reply(`🗑️ Removed **${removed.name}** #${removed.num} from ${calendarLabel(calendar)}.`);
+      }
+    } catch (err) {
+      console.error(err);
+      return interaction.reply({ content: `Something went wrong: ${err.message}`, ephemeral: true });
     }
-  }
-});
-
-client.login(process.env.DISCORD_TOKEN);
+  },
+};
