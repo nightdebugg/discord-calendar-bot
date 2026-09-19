@@ -192,6 +192,28 @@ app.get('/api/calendars/:calendar/drivers', validCalendarOr404, async (req, res)
   res.json(drivers);
 });
 
+app.post('/api/calendars/:calendar/drivers', requireApiKey, validCalendarOr404, async (req, res) => {
+  const { num, name, team, flag } = req.body;
+  if (!num || !name || !team) return res.status(400).json({ error: 'num, name, and team are required' });
+  const data = await readData();
+  const cal = data[req.params.calendar];
+  if (findDriver(cal, num)) return res.status(409).json({ error: `Driver #${num} already exists` });
+  const driver = { num: String(num), flag: flag || '', name, team, pts: 0, wins: 0, poles: 0, penalties: 0, results: {} };
+  cal.drivers.push(driver);
+  await writeData(data);
+  res.status(201).json(driver);
+});
+
+app.delete('/api/calendars/:calendar/drivers/:num', requireApiKey, validCalendarOr404, async (req, res) => {
+  const data = await readData();
+  const cal = data[req.params.calendar];
+  const idx = cal.drivers.findIndex(d => d.num === String(req.params.num));
+  if (idx === -1) return res.status(404).json({ error: `Driver #${req.params.num} not found` });
+  const [removed] = cal.drivers.splice(idx, 1);
+  await writeData(data);
+  res.json(removed);
+});
+
 app.patch('/api/calendars/:calendar/drivers/:num', requireApiKey, validCalendarOr404, async (req, res) => {
   const data = await readData();
   const driver = findDriver(data[req.params.calendar], req.params.num);
