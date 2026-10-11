@@ -3,196 +3,328 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#15151E">
+<meta name="description" content="Ace League: calendar, standings and records for our Roblox F1 2008 and PF 2001 racing series.">
 <title>Ace League</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Krona+One&family=Titillium+Web:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
+  /* ---------- tokens ---------- */
   :root{
-    --ink:#0A0A12;
-    --ink-2:#14141F;
-    --ink-3:#1C1C2B;
-    --paper:#ECEAF5;
-    --paper-dim:#8B89A0;
-    --line:#26263A;
-    --blue:#2648E8;
-    --gold:#D9A63E;
-    --silver:#B7B6C4;
-    --bronze:#B0703A;
-    --f1:#6D3CE0;
-    --f1-dim:#3A2A66;
-    --pf:#2F5FEA;
-    --pf-dim:#1B2E66;
-    --discord:#5865F2;
+    --black:#15151E;
+    --asphalt:#1E1E2A;
+    --asphalt-2:#2A2A38;
+    --line:#38383F;
+    --mute:#9A9AA3;
+    --soft:rgba(255,255,255,.78);
+    --gold:#F5C542;
+    --silver:#C9CBD1;
+    --ok:#3DDC84;
+    --warn:#E2A33B;
+    --display:'Krona One','Arial Black','Helvetica Neue',Arial,sans-serif;
+    --body:'Titillium Web','Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    --header-h:66px;
+    --accent:#E10600;
+    --accent-text:#FF4B3E;
+    --accent-soft:rgba(225,6,0,.16);
   }
+  .view-f1{--accent:#E10600; --accent-text:#FF4B3E; --accent-soft:rgba(225,6,0,.16);}
+  .view-pf{--accent:#8A43FF; --accent-text:#B98CFF; --accent-soft:rgba(138,67,255,.20);}
+
+  /* ---------- base ---------- */
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
   body{
-    background:var(--ink); color:var(--paper);
-    font-family:'Inter', sans-serif; line-height:1.5;
+    background:var(--black); color:#fff;
+    font-family:var(--body); font-size:16px; line-height:1.55;
     -webkit-font-smoothing:antialiased;
   }
-  h1,h2,h3,.num,.brand,.cat-name{
-    font-family:'Big Shoulders Display', sans-serif;
-    font-weight:800; letter-spacing:.01em; text-transform:uppercase;
-  }
   a{color:inherit;}
+  button{font:inherit; color:inherit;}
+  ul,ol{list-style:none;}
+  h1,h2,h3{font-family:var(--display); font-weight:400; text-transform:uppercase; line-height:1.08;}
   .wrap{max-width:1180px; margin:0 auto; padding:0 28px;}
   .hidden{display:none !important;}
+  :focus-visible{outline:3px solid #fff; outline-offset:2px;}
 
-  /* scoped accent colors */
-  .view-f1{--accent:var(--f1); --accent-dim:var(--f1-dim);}
-  .view-pf{--accent:var(--pf); --accent-dim:var(--pf-dim);}
+  .carbon{
+    background-color:var(--black);
+    background-image:
+      repeating-linear-gradient(45deg, rgba(255,255,255,.028) 0 2px, transparent 2px 6px),
+      repeating-linear-gradient(-45deg, rgba(0,0,0,.28) 0 2px, transparent 2px 6px);
+  }
+  .checker{
+    height:12px;
+    background:conic-gradient(#fff 25%, var(--black) 0 50%, #fff 0 75%, var(--black) 0) 0 0 / 12px 12px;
+  }
+
+  /* ---------- shared pieces ---------- */
+  .brandmark{display:inline-flex; align-items:center; gap:12px; font-family:var(--display); font-size:15px; text-transform:uppercase; line-height:1;}
+  .brandmark .tag{
+    background:var(--accent); color:#fff; padding:8px 18px 8px 14px; font-size:14px;
+    clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%);
+  }
+  .brandmark .sub{font-family:var(--body); font-weight:600; font-size:13.5px; color:var(--mute); text-transform:none;}
+
+  .btn{
+    display:inline-block; background:var(--accent); color:#fff; text-decoration:none; white-space:nowrap;
+    font-weight:700; font-size:15px; padding:10px 24px 10px 18px; border:none; cursor:pointer;
+    clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%);
+  }
+  .btn:hover{filter:brightness(1.14);}
+  .btn:focus-visible{outline-offset:-4px;}
+
+  .chip{
+    display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
+    font-weight:700; font-size:13px; line-height:1; padding:6px 14px 6px 10px;
+    background:var(--asphalt-2); color:#fff;
+    clip-path:polygon(0 0,100% 0,calc(100% - 7px) 100%,0 100%);
+  }
+  .chip .dot{width:8px; height:8px; border-radius:50%; background:currentColor; display:inline-block;}
+  .chip-live{background:var(--accent);}
+  .chip-live .dot{background:#fff; animation:pulse 1.2s ease-in-out infinite;}
+  .chip-next{background:#fff; color:var(--black);}
+  .chip-done{color:var(--mute);}
+  .chk{
+    width:12px; height:12px; display:inline-block;
+    background:conic-gradient(#fff 25%, #15151E 0 50%, #fff 0 75%, #15151E 0) 0 0 / 6px 6px;
+  }
+
+  .sync{display:inline-flex; align-items:center; gap:8px; font-size:13.5px; font-weight:600; color:var(--mute);}
+  .sync .dot{width:8px; height:8px; border-radius:50%; background:var(--mute); display:inline-block;}
+  .sync[data-state="loading"] .dot{animation:pulse 1.2s ease-in-out infinite;}
+  .sync[data-state="live"] .dot{background:var(--ok);}
+  .sync[data-state="offline"] .dot{background:var(--warn);}
+
+  .section-head{display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:10px 28px; margin-bottom:32px;}
+  .section-head h2{position:relative; padding-left:20px; font-size:clamp(22px,3vw,30px);}
+  .section-head h2::before{content:''; position:absolute; left:0; top:1px; bottom:1px; width:7px; background:var(--accent); transform:skewX(-18deg);}
+  .section-head .sub{color:var(--mute); font-size:15px; max-width:400px;}
+  .empty{color:var(--mute); font-size:15px;}
 
   /* ================= HOME ================= */
   #view-home{min-height:100vh; display:flex; flex-direction:column;}
-  #view-home header{padding:28px 0; border-bottom:1px solid var(--line);}
-  #view-home .brand{font-size:20px; display:flex; align-items:center; gap:9px;}
-  #view-home .brand .dot{width:10px; height:10px; background:linear-gradient(135deg,var(--f1),var(--pf)); border-radius:50%; display:inline-block;}
-  #view-home main{flex:1; display:flex; align-items:center; padding:64px 0;}
-  #view-home .home-wrap{max-width:1000px; margin:0 auto; padding:0 28px; width:100%;}
-  .intro{text-align:center; margin-bottom:52px;}
-  .intro .kicker{color:var(--paper-dim); font-size:14px; font-weight:600; margin-bottom:14px; letter-spacing:.02em;}
-  .intro h1{font-size:clamp(38px, 6vw, 62px); line-height:0.98;}
-  .intro p{color:var(--paper-dim); font-size:16px; max-width:440px; margin:18px auto 0;}
-  .cats{display:grid; grid-template-columns:1fr 1fr; gap:22px;}
+  .home-bar{display:flex; align-items:center; justify-content:space-between; gap:16px; padding-top:18px; padding-bottom:18px;}
+  #view-home header{border-bottom:3px solid var(--accent); background:var(--black);}
+  #view-home main{flex:1; padding:72px 0 80px;}
+  .intro{margin-bottom:48px;}
+  .intro h1{font-size:clamp(32px,6vw,64px); max-width:14ch;}
+  .intro p{color:var(--soft); font-size:18px; max-width:46ch; margin-top:20px;}
+  .cats{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px;}
   .cat-card{
-    position:relative; display:block; text-decoration:none; color:inherit;
-    background:var(--ink-2); border:1px solid var(--line); border-radius:8px;
-    padding:36px 28px; overflow:hidden; transition:transform .18s, border-color .18s;
-    cursor:pointer; font:inherit; text-align:left; width:100%;
+    position:relative; display:flex; flex-direction:column; text-align:left; width:100%;
+    padding:30px 30px 28px 38px; border:none; cursor:pointer; background:var(--asphalt);
+    clip-path:polygon(0 0,calc(100% - 30px) 0,100% 30px,100% 100%,0 100%);
+    transition:background .15s;
   }
-  .cat-card:hover{transform:translateY(-4px); border-color:var(--accent);}
-  .cat-card::before{content:''; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--accent);}
-  .cat-era{font-size:12.5px; color:var(--accent); font-weight:700; letter-spacing:.03em; margin-bottom:10px;}
-  .cat-name{font-size:44px; line-height:1; color:var(--accent);}
-  .cat-sub{font-size:14.5px; color:var(--paper-dim); margin-top:14px; max-width:280px;}
-  .cat-meta{display:flex; gap:24px; margin-top:24px;}
-  .cat-meta .num{font-size:22px;}
-  .cat-meta .lbl{font-size:11.5px; color:var(--paper-dim); margin-top:2px;}
-  .cat-go{margin-top:26px; display:inline-flex; align-items:center; gap:6px; font-size:13.5px; font-weight:600; color:var(--paper);}
-  #view-home footer{padding:26px 0; text-align:center; color:var(--paper-dim); font-size:13px; border-top:1px solid var(--line);}
-  #view-home footer a{color:var(--discord); text-decoration:none; font-weight:600;}
-  @media (max-width:640px){ .cats{grid-template-columns:1fr;} }
+  .cat-card::before{content:''; position:absolute; left:0; top:0; bottom:0; width:9px; background:var(--accent);}
+  .cat-card:hover{background:var(--asphalt-2);}
+  .cat-card:focus-visible{outline-offset:-5px;}
+  .cat-top{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
+  .cat-name{font-family:var(--display); font-size:clamp(56px,9vw,92px); line-height:.95;}
+  .cat-era{
+    background:var(--accent); color:#fff; font-weight:700; font-size:13px; line-height:1;
+    padding:7px 18px 7px 12px; margin-right:34px;
+    clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,0 100%);
+  }
+  .cat-sub{display:block; color:var(--soft); font-size:16px; max-width:34ch; margin-top:16px;}
+  .cat-meta{display:flex; gap:34px; margin-top:26px;}
+  .cat-meta b{display:block; font-family:var(--display); font-weight:400; font-size:26px; line-height:1;}
+  .cat-meta i{display:block; font-style:normal; font-size:13.5px; color:var(--mute); margin-top:6px;}
+  .cat-go{display:inline-flex; align-items:center; gap:10px; margin-top:28px; font-weight:700;}
+  .chev{width:10px; height:15px; background:var(--accent); clip-path:polygon(0 0,100% 50%,0 100%); display:inline-block;}
+  #view-home footer{padding:28px 0 34px; color:var(--mute); font-size:14px;}
+  #view-home footer a{color:#fff; font-weight:700;}
 
-  /* ================= SERIES PAGES (F1 / PF) ================= */
+  /* ================= SERIES PAGES ================= */
   .series header{
     position:sticky; top:0; z-index:50;
-    background:rgba(10,10,18,0.92); backdrop-filter:blur(6px);
-    border-bottom:1px solid var(--line);
+    background:rgba(21,21,30,.95); backdrop-filter:blur(8px);
+    border-bottom:3px solid var(--accent);
   }
-  .series nav.wrap{display:flex; align-items:center; justify-content:space-between; height:64px;}
-  .series .brand{font-size:20px; display:flex; align-items:center; gap:9px; cursor:pointer; border:none; background:none; color:inherit; font-family:'Big Shoulders Display'; text-transform:uppercase; font-weight:800; letter-spacing:.01em; padding:0;}
-  .series .brand .dot{width:10px; height:10px; background:var(--accent); border-radius:50%; display:inline-block;}
-  .series .brand .sub{font-family:'Inter'; text-transform:none; font-weight:500; font-size:12.5px; color:var(--paper-dim); letter-spacing:0;}
-  .nav-right{display:flex; align-items:center; gap:20px;}
-  .navlinks{display:flex; gap:6px;}
+  .series nav.wrap{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px 20px; min-height:var(--header-h); padding-top:10px; padding-bottom:10px;}
+  .brandbtn{background:none; border:none; cursor:pointer; padding:0; text-align:left;}
+  .nav-right{display:flex; align-items:center; gap:20px; margin-left:auto;}
+  .navlinks{display:flex; gap:2px;}
   .navlinks button{
-    background:none; border:none; color:var(--paper-dim);
-    font-family:'Inter'; font-size:14px; font-weight:500;
-    padding:8px 14px; border-radius:4px; cursor:pointer; transition:color .15s;
+    background:none; border:none; cursor:pointer; color:var(--mute);
+    font-weight:600; font-size:15px; padding:8px 12px; border-bottom:3px solid transparent;
   }
-  .navlinks button:hover{color:var(--paper);}
-  .discord-btn{
-    background:var(--accent); color:#fff; text-decoration:none;
-    font-family:'Inter'; font-weight:600; font-size:13.5px;
-    padding:9px 16px; border-radius:5px; white-space:nowrap; transition:opacity .15s;
-    border:none; cursor:pointer; display:inline-block;
+  .navlinks button:hover{color:#fff; border-bottom-color:var(--accent);}
+
+  /* hero */
+  .hero{overflow:hidden; border-bottom:1px solid var(--line);}
+  .hero-inner{position:relative; padding-top:72px;}
+  .hero-slab{
+    position:absolute; top:0; bottom:0; left:56%; right:calc((100% - 100vw) / 2);
+    background:var(--accent);
+    clip-path:polygon(20% 0,100% 0,100% 100%,0 100%);
+    animation:slab-in .8s cubic-bezier(.2,.8,.2,1) both;
   }
-  .discord-btn:hover{opacity:.85;}
+  .hero-slab::after{content:''; position:absolute; inset:0; background:repeating-linear-gradient(115deg, transparent 0 18px, rgba(0,0,0,.15) 18px 20px);}
+  .hero-grid{position:relative; z-index:1; display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); gap:48px; align-items:center;}
+  .hero-tags{display:flex; flex-wrap:wrap; align-items:center; gap:10px 18px; margin-bottom:22px;}
+  .hero h1{font-size:clamp(24px,3.9vw,40px);}
+  .hero-copy p{color:var(--soft); font-size:17.5px; max-width:50ch; margin-top:22px;}
 
-  .hero{padding:88px 0 60px; border-bottom:1px solid var(--line);}
-  .hero .kicker{color:var(--accent); font-weight:700; font-size:14px; margin-bottom:14px;}
-  .hero h1{font-size:clamp(44px, 7.5vw, 84px); line-height:0.94; max-width:760px;}
-  .hero h1 .accent-text{color:var(--accent);}
-  .hero p{max-width:480px; margin-top:22px; color:var(--paper-dim); font-size:16.5px;}
-  .hero-meta{display:flex; gap:36px; margin-top:44px; flex-wrap:wrap;}
-  .hero-meta .num{font-size:36px; color:var(--gold); line-height:1;}
-  .hero-meta .lbl{font-size:12.5px; color:var(--paper-dim); margin-top:4px;}
-
-  .series section{padding:76px 0; border-bottom:1px solid var(--line);}
-  .section-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:36px; flex-wrap:wrap; gap:10px;}
-  .section-head h2{font-size:32px;}
-  .section-head .sub{color:var(--paper-dim); font-size:13.5px; max-width:340px; text-align:right;}
-
-  .cal-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px 16px;}
-  .cal-item{display:grid; grid-template-columns:76px 1fr; border-radius:4px; overflow:hidden;}
-  .cal-rd{background:var(--blue); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Big Shoulders Display'; font-size:22px; font-weight:800;}
-  .cal-info{background:var(--ink-3); display:flex; align-items:center; gap:12px; padding:0 16px;}
-  .cal-flag{font-size:22px;}
-  .cal-country{font-weight:600; font-size:15px; color:#7C93FF;}
-  .cal-item.live .cal-rd{background:var(--accent);}
-  .cal-item.live .cal-country{color:var(--accent);}
-  .cal-item.done{opacity:0.45;}
-
-  .records-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line);}
-  .record-card{background:var(--ink); padding:24px 20px;}
-  .record-card .num{font-size:40px; color:var(--accent); line-height:1;}
-  .record-card .desc{font-size:13px; color:var(--paper-dim); margin-top:8px;}
-  .record-card .who{font-size:14px; margin-top:2px; font-weight:600;}
-
-  .standings-scroll{overflow-x:auto; border:1px solid var(--line); border-radius:4px;}
-  table.standings{border-collapse:collapse; font-size:13.5px; min-width:900px; width:100%;}
-  table.standings th{text-align:left; font-weight:600; color:var(--paper-dim); font-size:11.5px; letter-spacing:.03em; padding:12px 10px; border-bottom:1px solid var(--line); background:var(--ink-2); position:sticky; top:0;}
-  table.standings th.race{text-align:center; font-size:16px;}
-  table.standings td{padding:11px 10px; border-bottom:1px solid var(--line); white-space:nowrap;}
-  table.standings tr:last-child td{border-bottom:none;}
-  table.standings tr.leader{background:var(--accent-dim);}
-  td.pos{font-family:'Big Shoulders Display'; font-size:17px; color:var(--paper-dim); text-align:center;}
-  tr.leader td.pos{color:#fff;}
-  td.drivernum{font-family:'Big Shoulders Display'; font-size:16px; color:var(--paper-dim); padding-right:4px;}
-  td.driver{font-weight:600;}
-  td.team{color:var(--paper-dim);}
-  td.pts{font-family:'Big Shoulders Display'; font-size:17px;}
-  td.dif{color:var(--paper-dim);}
-  td.race{text-align:center; color:var(--paper-dim);}
-  .p1,.p2,.p3{display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; border:2px solid; font-size:12.5px; font-weight:600;}
-  .p1{border-color:var(--gold); color:var(--gold);}
-  .p2{border-color:var(--silver); color:var(--silver);}
-  .p3{border-color:var(--bronze); color:var(--bronze);}
-  .out{color:#7a4040; font-size:11px; font-weight:600;}
-  .standings-note{font-size:12.5px; color:var(--paper-dim); margin-top:14px;}
-
-  .driver-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
-  .driver-card{
-    position:relative; background:var(--ink-2); border:1px solid var(--line);
-    border-radius:6px; padding:20px 20px 18px; overflow:hidden;
+  .nextrace{
+    position:relative; background:var(--black); padding:28px 30px 26px;
+    clip-path:polygon(0 0,calc(100% - 26px) 0,100% 26px,100% 100%,0 100%);
   }
-  .driver-card::before{content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--accent);}
-  .driver-card .dnum{font-family:'Big Shoulders Display'; font-size:14px; color:var(--accent); letter-spacing:.02em;}
-  .driver-card .dname{font-size:19px; font-weight:700; margin-top:6px; display:flex; align-items:center; gap:8px;}
-  .driver-card .dteam{color:var(--paper-dim); font-size:13.5px; margin-top:4px;}
-  @media (max-width:900px){ .driver-grid{grid-template-columns:1fr 1fr;} }
-  @media (max-width:560px){ .driver-grid{grid-template-columns:1fr;} }
+  .nextrace.live::before{content:''; position:absolute; left:0; right:0; top:0; height:5px; background:var(--accent);}
+  .nr-label{display:flex; align-items:center; gap:8px; font-weight:700; font-size:14.5px; color:var(--mute); min-height:24px;}
+  .nr-place{display:flex; align-items:center; gap:16px; margin:16px 0 6px;}
+  .nr-flag{font-size:46px; line-height:1;}
+  .nr-country{font-family:var(--display); font-size:clamp(22px,2.6vw,32px); text-transform:uppercase; line-height:1.05; overflow-wrap:anywhere;}
+  .nr-round{color:var(--mute); font-size:15.5px;}
+  .nr-when{display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:6px 14px; margin-top:20px; padding-top:16px; border-top:1px solid var(--line); color:var(--mute); font-size:15px;}
+  .nr-when strong{font-family:var(--display); font-weight:400; font-size:19px; color:#fff;}
+  .nr-wrap{color:var(--soft); margin-top:14px; font-size:15.5px;}
 
-  .history-grid{display:flex; flex-direction:column; gap:16px;}
-  .season-card{background:var(--ink-2); border:1px solid var(--line); border-radius:6px; padding:24px 26px;}
-  .season-card .shead{display:flex; align-items:baseline; gap:10px; margin-bottom:16px;}
-  .season-card .snum{font-family:'Big Shoulders Display'; font-size:28px; color:var(--accent);}
-  .season-card .slabel{font-size:13px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.03em;}
-  .award-list{display:grid; grid-template-columns:1fr 1fr; gap:10px 24px;}
-  .award-row{display:flex; justify-content:space-between; gap:12px; font-size:14px; padding:8px 0; border-bottom:1px solid var(--line);}
-  .award-row .alabel{color:var(--paper-dim);}
-  .award-row .avalue{font-weight:600; text-align:right;}
-  @media (max-width:640px){ .award-list{grid-template-columns:1fr;} }
+  .ribbon{display:flex; flex-wrap:wrap; margin-top:60px; border-top:1px solid var(--line); position:relative; z-index:1; max-width:calc(56% - 30px);}
+  .stat{position:relative; padding:22px 38px 22px 0; margin-right:38px;}
+  .stat:not(:last-child)::after{content:''; position:absolute; right:0; top:22px; bottom:22px; width:2px; background:var(--line); transform:skewX(-20deg);}
+  .stat b{display:block; font-family:var(--display); font-weight:400; font-size:32px; line-height:1;}
+  .stat span{display:block; font-size:14px; color:var(--mute); margin-top:6px;}
 
-  .about-grid{display:grid; grid-template-columns:1.1fr 0.9fr; gap:60px;}
-  .about-grid h3{font-size:19px; margin-bottom:14px; color:var(--accent);}
-  .about-grid p{color:var(--paper-dim); font-size:15px; margin-bottom:20px; max-width:480px;}
-  .crew{list-style:none;}
-  .crew li{padding:14px 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; font-size:14.5px;}
-  .crew li:last-child{border-bottom:none;}
-  .crew .role{color:var(--paper-dim); font-size:13px;}
-  .join-box{margin-top:26px; padding:22px; border:1px solid var(--line); background:var(--ink-2);}
-  .join-box p{margin-bottom:16px; font-size:14.5px;}
+  /* blocks */
+  .block{padding:72px 0; border-bottom:1px solid var(--line); scroll-margin-top:var(--header-h);}
 
-  .series footer{padding:30px 0; text-align:center; color:var(--paper-dim); font-size:13px;}
+  /* calendar */
+  .cal-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px 16px;}
+  .race{display:grid; grid-template-columns:78px minmax(0,1fr) auto; align-items:stretch; background:var(--asphalt); min-height:70px;}
+  .race-rd{
+    display:flex; align-items:center; justify-content:center; padding-right:8px;
+    background:var(--asphalt-2); font-family:var(--display); font-size:19px;
+    clip-path:polygon(0 0,100% 0,calc(100% - 13px) 100%,0 100%);
+  }
+  .race-body{display:flex; flex-direction:column; justify-content:center; min-width:0; padding:10px 14px 10px 8px;}
+  .race-place{display:flex; align-items:center; gap:12px; min-width:0;}
+  .race-place .flag{font-size:24px; line-height:1;}
+  .race-place .country{font-weight:700; font-size:18px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .race-when{font-size:14px; color:var(--mute); margin-top:3px;}
+  .race-status{display:flex; align-items:center; padding-right:14px;}
+  .race.live{background:var(--accent-soft); outline:2px solid var(--accent); outline-offset:-2px;}
+  .race.live .race-rd{background:var(--accent);}
+  .race.next .race-rd{background:#fff; color:var(--black);}
+  .race.done{opacity:.66;}
 
-  @media (max-width: 720px){
+  /* records */
+  .records-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px;}
+  .record{
+    position:relative; background:var(--asphalt); padding:22px 20px 20px 26px;
+    clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,0 100%);
+  }
+  .record::before{content:''; position:absolute; left:0; top:0; bottom:0; width:6px; background:var(--accent);}
+  .rlabel{font-size:14.5px; font-weight:600; color:var(--mute);}
+  .rnum{font-family:var(--display); font-size:clamp(30px,3.4vw,42px); line-height:1; margin:12px 0 8px;}
+  .rwho{font-weight:700; font-size:16px; min-height:1.55em; overflow-wrap:anywhere;}
+
+  /* standings towers */
+  .tables{display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); gap:32px; align-items:start;}
+  .tower-title{font-size:14px; color:var(--mute); margin-bottom:14px;}
+  .tower{display:flex; flex-direction:column; gap:4px;}
+  .trow{display:grid; grid-template-columns:50px 46px minmax(0,1fr) auto; align-items:center; background:var(--asphalt); min-height:54px;}
+  .trow .pos{
+    align-self:stretch; display:flex; align-items:center; justify-content:center; padding-right:5px;
+    background:var(--asphalt-2); font-family:var(--display); font-size:16px;
+    clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%);
+  }
+  .trow.lead .pos{background:var(--accent);}
+  .trow .numtab{
+    align-self:stretch; display:flex; align-items:center; justify-content:center; padding-right:5px;
+    background:var(--team,#8D8D95); color:var(--on-team,#15151E);
+    font-family:var(--display); font-size:13px;
+    clip-path:polygon(0 0,100% 0,calc(100% - 9px) 100%,0 100%);
+  }
+  .trow .who{display:flex; flex-direction:column; min-width:0; padding:6px 12px;}
+  .trow .nm{font-weight:700; font-size:17px; letter-spacing:.02em; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .trow .tm{font-size:13.5px; color:var(--mute); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .trow .pts{font-family:var(--display); font-size:18px; padding-right:16px; text-align:right; line-height:1.1;}
+  .trow .pts small{display:block; font-family:var(--body); font-size:12px; font-weight:600; color:var(--mute); margin-top:2px;}
+  .tower-note{color:var(--mute); font-size:14.5px; margin-top:14px;}
+
+  /* history */
+  .season{display:grid; grid-template-columns:160px minmax(0,1fr); background:var(--asphalt); margin-bottom:14px;}
+  .season-id{
+    display:flex; flex-direction:column; justify-content:center; padding:24px 34px 24px 26px;
+    background:var(--asphalt-2); clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%);
+  }
+  .season-id b{font-family:var(--display); font-weight:400; font-size:42px; line-height:1;}
+  .season-id span{color:var(--mute); font-size:14px; margin-top:8px;}
+  .season-body{padding:22px 28px;}
+  .champs{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-bottom:18px;}
+  .champ{border-left:5px solid var(--gold); padding:4px 0 4px 14px;}
+  .champ.wcc{border-left-color:var(--silver);}
+  .champ small{display:block; color:var(--mute); font-size:13.5px; font-weight:600;}
+  .champ strong{font-size:22px; font-weight:700; overflow-wrap:anywhere;}
+  .awards{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 32px;}
+  .award{display:flex; justify-content:space-between; gap:14px; padding:9px 0; border-top:1px solid var(--line); font-size:15px;}
+  .award span{color:var(--mute);}
+  .award b{font-weight:700; text-align:right; overflow-wrap:anywhere;}
+
+  /* about */
+  .about-grid{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr); gap:56px;}
+  .about-grid h3{font-size:15px; margin-bottom:10px;}
+  .about-grid p{color:var(--soft); margin-bottom:24px; max-width:56ch;}
+  .crew li{display:flex; justify-content:space-between; gap:16px; padding:14px 0; border-top:1px solid var(--line); font-size:16px;}
+  .crew .role{color:var(--mute);}
+  .join-box{
+    position:relative; background:var(--asphalt); padding:30px 30px 30px 36px; align-self:start;
+    clip-path:polygon(0 0,calc(100% - 26px) 0,100% 26px,100% 100%,0 100%);
+  }
+  .join-box::before{content:''; position:absolute; left:0; top:0; bottom:0; width:8px; background:var(--accent);}
+  .join-box p{color:#fff; margin-bottom:20px; max-width:none;}
+  .join-box .btn{display:block; text-align:center; padding:14px 24px 14px 20px;}
+
+  .series footer{padding:34px 0 40px; color:var(--mute); font-size:14px;}
+
+  /* ---------- motion ---------- */
+  @keyframes slab-in{from{transform:translateX(16%); opacity:0;} to{transform:none; opacity:1;}}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.25;}}
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none !important; transition:none !important; scroll-behavior:auto !important;}
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:980px){
+    .hero-grid{grid-template-columns:1fr; gap:36px;}
+    .hero-slab{display:none;}
+    .ribbon{max-width:none;}
+    .tables{grid-template-columns:1fr;}
+    .nextrace{border-top:5px solid var(--accent);}
+    .nextrace.live::before{display:none;}
+  }
+  @media (max-width:860px){
+    :root{--header-h:112px;}
+    .series nav.wrap{min-height:0;}
+    .nav-right{display:contents;}
+    .btn{order:2; margin-left:auto;}
+    .navlinks{order:3; width:100%; overflow-x:auto; scrollbar-width:none; margin:0 -6px;}
+    .navlinks::-webkit-scrollbar{display:none;}
+    .navlinks button{white-space:nowrap;}
+  }
+  @media (max-width:720px){
+    .cats{grid-template-columns:1fr;}
     .cal-grid{grid-template-columns:1fr;}
-    .records-grid{grid-template-columns:repeat(2,1fr);}
-    .about-grid{grid-template-columns:1fr; gap:40px;}
-    .navlinks{display:none;}
-    .section-head .sub{display:none;}
+    .records-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .about-grid{grid-template-columns:1fr; gap:36px;}
+    .season{grid-template-columns:1fr;}
+    .season-id{clip-path:none; flex-direction:row; align-items:baseline; gap:14px; padding:16px 26px;}
+    .season-id span{margin-top:0;}
+    .champs,.awards{grid-template-columns:1fr;}
+    .section-head .sub{max-width:none;}
+  }
+  @media (max-width:560px){
+    .wrap{padding:0 18px;}
+    .hero-inner{padding-top:44px;}
+    .block{padding:52px 0;}
+    #view-home main{padding:48px 0 56px;}
+    .cat-card{padding:24px 22px 24px 30px;}
+    .stat{padding-right:26px; margin-right:26px;}
+    .trow{grid-template-columns:44px 40px minmax(0,1fr) auto;}
+    .trow .pts{padding-right:12px;}
   }
 </style>
 </head>
@@ -200,46 +332,51 @@
 
 <!-- ================= HOME VIEW ================= -->
 <div id="view-home">
-  <header><div class="home-wrap brand"><span class="dot"></span>ACE LEAGUE</div></header>
-  <main>
-    <div class="home-wrap">
+  <header>
+    <div class="wrap home-bar">
+      <div class="brandmark"><span class="tag">Ace</span><span>League</span></div>
+      <a class="btn" href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join Discord</a>
+    </div>
+  </header>
+  <main class="carbon">
+    <div class="wrap">
       <div class="intro">
-        <div class="kicker">CHOOSE A SERIES</div>
         <h1>Two grids.<br>One league.</h1>
-        <p>Ace League runs two Roblox racing series side by side. Pick one to see its calendar, standings, and records.</p>
+        <p>Ace League runs two Roblox racing series side by side. Pick one to see its calendar, standings and records.</p>
       </div>
       <div class="cats">
         <button class="cat-card view-f1" onclick="showView('f1')">
-          <div class="cat-era">2008 ERA</div>
-          <div class="cat-name">F1</div>
-          <div class="cat-sub">The modern-spec series — ten rounds, current-gen cars and circuits.</div>
-          <div class="cat-meta">
-            <div><div class="num">10</div><div class="lbl">Rounds</div></div>
-            <div><div class="num">15</div><div class="lbl">Drivers</div></div>
-          </div>
-          <div class="cat-go">Enter F1 →</div>
+          <span class="cat-top"><span class="cat-name">F1</span><span class="cat-era">2008 era</span></span>
+          <span class="cat-sub">The modern-spec series: current-gen cars and circuits.</span>
+          <span class="cat-meta">
+            <span><b id="home-f1-rounds">10</b><i>Rounds</i></span>
+            <span><b id="home-f1-drivers">15</b><i>Drivers</i></span>
+          </span>
+          <span class="cat-go"><span class="chev"></span>Open F1 2008</span>
         </button>
         <button class="cat-card view-pf" onclick="showView('pf')">
-          <div class="cat-era">2001 ERA</div>
-          <div class="cat-name">PF</div>
-          <div class="cat-sub">The classic series — ten rounds of old-school aero and circuits.</div>
-          <div class="cat-meta">
-            <div><div class="num">10</div><div class="lbl">Rounds</div></div>
-            <div><div class="num">12</div><div class="lbl">Drivers</div></div>
-          </div>
-          <div class="cat-go">Enter PF →</div>
+          <span class="cat-top"><span class="cat-name">PF</span><span class="cat-era">2001 era</span></span>
+          <span class="cat-sub">The classic series: old-school aero and classic circuits.</span>
+          <span class="cat-meta">
+            <span><b id="home-pf-rounds">10</b><i>Rounds</i></span>
+            <span><b id="home-pf-drivers">12</b><i>Drivers</i></span>
+          </span>
+          <span class="cat-go"><span class="chev"></span>Open PF 2001</span>
         </button>
       </div>
     </div>
   </main>
-  <footer class="home-wrap">Ace League — a fan-run Roblox racing community. <a href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join the Discord</a></footer>
+  <div class="checker" aria-hidden="true"></div>
+  <footer class="wrap">Ace League is a fan-run Roblox racing community. <a href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join the Discord</a></footer>
 </div>
 
 <!-- ================= F1 VIEW ================= -->
 <div id="view-f1" class="series view-f1 hidden">
   <header>
     <nav class="wrap">
-      <button class="brand" onclick="showView('home')"><span class="dot"></span>ACE LEAGUE<span class="sub">— F1 2008 · S5</span></button>
+      <button class="brandbtn" onclick="showView('home')" aria-label="Back to Ace League home">
+        <span class="brandmark"><span class="tag">F1</span><span>Ace League</span><span class="sub">Season 5</span></span>
+      </button>
       <div class="nav-right">
         <div class="navlinks">
           <button data-scroll="f1-calendar">Calendar</button>
@@ -248,53 +385,61 @@
           <button data-scroll="f1-history">History</button>
           <button data-scroll="f1-about">About</button>
         </div>
-        <a class="discord-btn" href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join Discord</a>
+        <a class="btn" href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join Discord</a>
       </div>
     </nav>
   </header>
 
-  <section class="hero">
-    <div class="wrap">
-      <div class="kicker">SEASON 5 · STARTING SOON</div>
-      <h1>Ten rounds.<br>One grid.<br><span class="accent-text">No mercy.</span></h1>
-      <p>Ace League is a Roblox F1 racing community — real drivers, real drama, season after season. Here's where we track the calendar, the standings, and the records that get set along the way.</p>
-      <div class="hero-meta">
-        <div><div class="num">10</div><div class="lbl">Rounds this season</div></div>
-        <div><div class="num">15</div><div class="lbl">Drivers on the grid</div></div>
-        <div><div class="num">R1</div><div class="lbl">Next up — Australia</div></div>
+  <section class="hero carbon">
+    <div class="wrap hero-inner">
+      <div class="hero-slab" aria-hidden="true"></div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <div class="hero-tags">
+            <span class="chip" id="f1-season-chip">Season 5: starting soon</span>
+            <span class="sync" id="f1-sync" data-state="loading"><i class="dot"></i><span>Connecting to live data…</span></span>
+          </div>
+          <h1><span id="f1-hero-line">Ten rounds.</span><br>One grid.<br>No mercy.</h1>
+          <p>Ace League is a Roblox F1 racing community: real drivers, real drama, season after season. Here's where we track the calendar, the standings, and the records that get set along the way.</p>
+        </div>
+        <aside class="nextrace" id="f1-next-race" aria-live="polite"></aside>
       </div>
+      <div class="ribbon" id="f1-hero-meta"></div>
     </div>
   </section>
 
-  <section id="f1-calendar">
+  <section class="block" id="f1-calendar">
     <div class="wrap">
-      <div class="section-head"><h2>Season 5 Calendar</h2><div class="sub">Ten rounds across five months of racing.</div></div>
+      <div class="section-head"><h2>Season 5 Calendar</h2><div class="sub">Status updates the moment a host starts or ends a race.</div></div>
       <div class="cal-grid" id="f1-cal-grid"></div>
     </div>
   </section>
 
-  <section id="f1-records">
+  <section class="block" id="f1-records">
     <div class="wrap">
-      <div class="section-head"><h2>League Records</h2><div class="sub">Placeholders — swap in the real numbers once S5 wraps up.</div></div>
+      <div class="section-head"><h2>League Records</h2><div class="sub">Season 5 so far, updated after every result.</div></div>
       <div class="records-grid" id="f1-records-grid"></div>
     </div>
   </section>
 
-  <section id="f1-standings">
+  <section class="block" id="f1-standings">
     <div class="wrap">
-      <div class="section-head"><h2>The Grid</h2><div class="sub">Every driver racing this season.</div></div>
-      <div class="driver-grid" id="f1-driver-grid"></div>
+      <div class="section-head"><h2>Standings</h2><div class="sub">Drivers and constructors, ranked by points.</div></div>
+      <div class="tables">
+        <div><h3 class="tower-title">Drivers</h3><div id="f1-driver-grid"></div></div>
+        <div><h3 class="tower-title">Constructors</h3><div id="f1-team-grid"></div></div>
+      </div>
     </div>
   </section>
 
-  <section id="f1-history">
+  <section class="block" id="f1-history">
     <div class="wrap">
       <div class="section-head"><h2>Season History</h2><div class="sub">Past champions and award holders.</div></div>
-      <div class="history-grid" id="f1-history-grid"></div>
+      <div id="f1-history-grid"></div>
     </div>
   </section>
 
-  <section id="f1-about">
+  <section class="block" id="f1-about">
     <div class="wrap">
       <div class="section-head"><h2>About Us</h2></div>
       <div class="about-grid">
@@ -302,7 +447,7 @@
           <h3>Who we are</h3>
           <p>Ace League is a Roblox F1 community built by racers, for racers. We run full seasons, keep the standings honest, and argue about strategy in the group chat between rounds.</p>
           <h3>What we do</h3>
-          <p>Race-day hosting, season standings, and a running record book. Replace this text and the crew list below with your own — this section is yours to make personal.</p>
+          <p>Race-day hosting, season standings, and a running record book.</p>
           <ul class="crew">
             <li>Founder &amp; League Admin <span class="role">Rodion</span></li>
             <li>Race Steward <span class="role">Open role</span></li>
@@ -310,21 +455,24 @@
           </ul>
         </div>
         <div class="join-box">
-          <p>Join Ace League on Discord — race-day pings, standings updates, and the group chat where it all happens.</p>
-          <a class="discord-btn" style="display:block; text-align:center; padding:13px;" href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join the Discord</a>
+          <p>Join Ace League on Discord for race-day pings, standings updates, and the group chat where it all happens.</p>
+          <a class="btn" href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join the Discord</a>
         </div>
       </div>
     </div>
   </section>
 
-  <footer class="wrap">Ace League — a fan-run Roblox F1 community. Not affiliated with Formula 1, FIA, Roblox Corporation, or any real team.</footer>
+  <div class="checker" aria-hidden="true"></div>
+  <footer class="wrap">Ace League is a fan-run Roblox F1 community. Not affiliated with Formula 1, FIA, Roblox Corporation, or any real team.</footer>
 </div>
 
 <!-- ================= PF VIEW ================= -->
 <div id="view-pf" class="series view-pf hidden">
   <header>
     <nav class="wrap">
-      <button class="brand" onclick="showView('home')"><span class="dot"></span>ACE LEAGUE<span class="sub">— PF 2001 · S5</span></button>
+      <button class="brandbtn" onclick="showView('home')" aria-label="Back to Ace League home">
+        <span class="brandmark"><span class="tag">PF</span><span>Ace League</span><span class="sub">Season 5</span></span>
+      </button>
       <div class="nav-right">
         <div class="navlinks">
           <button data-scroll="pf-calendar">Calendar</button>
@@ -333,61 +481,69 @@
           <button data-scroll="pf-history">History</button>
           <button data-scroll="pf-about">About</button>
         </div>
-        <a class="discord-btn" href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join Discord</a>
+        <a class="btn" href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join Discord</a>
       </div>
     </nav>
   </header>
 
-  <section class="hero">
-    <div class="wrap">
-      <div class="kicker">SEASON 5 · STARTING SOON</div>
-      <h1>Ten rounds.<br>Old school aero.<br><span class="accent-text">Full send.</span></h1>
-      <p>PF is Ace League's 2001-era series — classic cars, classic circuits. Here's where we track the calendar, the standings, and the records that get set along the way.</p>
-      <div class="hero-meta">
-        <div><div class="num">10</div><div class="lbl">Rounds this season</div></div>
-        <div><div class="num">12</div><div class="lbl">Drivers on the grid</div></div>
-        <div><div class="num">R1</div><div class="lbl">Next up — Australia</div></div>
+  <section class="hero carbon">
+    <div class="wrap hero-inner">
+      <div class="hero-slab" aria-hidden="true"></div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <div class="hero-tags">
+            <span class="chip" id="pf-season-chip">Season 5: starting soon</span>
+            <span class="sync" id="pf-sync" data-state="loading"><i class="dot"></i><span>Connecting to live data…</span></span>
+          </div>
+          <h1><span id="pf-hero-line">Ten rounds.</span><br>Old school aero.<br>Full send.</h1>
+          <p>PF is Ace League's 2001-era series: classic cars, classic circuits. Here's where we track the calendar, the standings, and the records that get set along the way.</p>
+        </div>
+        <aside class="nextrace" id="pf-next-race" aria-live="polite"></aside>
       </div>
+      <div class="ribbon" id="pf-hero-meta"></div>
     </div>
   </section>
 
-  <section id="pf-calendar">
+  <section class="block" id="pf-calendar">
     <div class="wrap">
-      <div class="section-head"><h2>Season 5 Calendar</h2><div class="sub">Ten rounds of the PF 2001 series.</div></div>
+      <div class="section-head"><h2>Season 5 Calendar</h2><div class="sub">Status updates the moment a host starts or ends a race.</div></div>
       <div class="cal-grid" id="pf-cal-grid"></div>
     </div>
   </section>
 
-  <section id="pf-records">
+  <section class="block" id="pf-records">
     <div class="wrap">
-      <div class="section-head"><h2>League Records</h2><div class="sub">Placeholders — swap in the real numbers once S5 wraps up.</div></div>
+      <div class="section-head"><h2>League Records</h2><div class="sub">Season 5 so far, updated after every result.</div></div>
       <div class="records-grid" id="pf-records-grid"></div>
     </div>
   </section>
 
-  <section id="pf-standings">
+  <section class="block" id="pf-standings">
     <div class="wrap">
-      <div class="section-head"><h2>The Grid</h2><div class="sub">Every driver racing this season.</div></div>
-      <div class="driver-grid" id="pf-driver-grid"></div>
+      <div class="section-head"><h2>Standings</h2><div class="sub">Drivers and constructors, ranked by points.</div></div>
+      <div class="tables">
+        <div><h3 class="tower-title">Drivers</h3><div id="pf-driver-grid"></div></div>
+        <div><h3 class="tower-title">Constructors</h3><div id="pf-team-grid"></div></div>
+      </div>
     </div>
   </section>
 
-  <section id="pf-history">
+  <section class="block" id="pf-history">
     <div class="wrap">
       <div class="section-head"><h2>Season History</h2><div class="sub">Past champions and award holders.</div></div>
-      <div class="history-grid" id="pf-history-grid"></div>
+      <div id="pf-history-grid"></div>
     </div>
   </section>
 
-  <section id="pf-about">
+  <section class="block" id="pf-about">
     <div class="wrap">
       <div class="section-head"><h2>About Us</h2></div>
       <div class="about-grid">
         <div>
           <h3>Who we are</h3>
-          <p>Ace League is a Roblox racing community built by racers, for racers. PF is our 2001-era series, run alongside F1 — we keep the standings honest and argue about strategy in the group chat between rounds.</p>
+          <p>Ace League is a Roblox racing community built by racers, for racers. PF is our 2001-era series, run alongside F1. We keep the standings honest and argue about strategy in the group chat between rounds.</p>
           <h3>What we do</h3>
-          <p>Race-day hosting, season standings, and a running record book. Replace this text and the crew list below with your own — this section is yours to make personal.</p>
+          <p>Race-day hosting, season standings, and a running record book.</p>
           <ul class="crew">
             <li>Founder &amp; League Admin <span class="role">Rodion</span></li>
             <li>Race Steward <span class="role">Open role</span></li>
@@ -395,248 +551,425 @@
           </ul>
         </div>
         <div class="join-box">
-          <p>Join Ace League on Discord — race-day pings, standings updates, and the group chat where it all happens.</p>
-          <a class="discord-btn" style="display:block; text-align:center; padding:13px;" href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join the Discord</a>
+          <p>Join Ace League on Discord for race-day pings, standings updates, and the group chat where it all happens.</p>
+          <a class="btn" href="https://discord.gg/t2UymT43" target="_blank" rel="noopener">Join the Discord</a>
         </div>
       </div>
     </div>
   </section>
 
-  <footer class="wrap">Ace League — a fan-run Roblox racing community. Not affiliated with Formula 1, FIA, Roblox Corporation, or any real team.</footer>
+  <div class="checker" aria-hidden="true"></div>
+  <footer class="wrap">Ace League is a fan-run Roblox racing community. Not affiliated with Formula 1, FIA, Roblox Corporation, or any real team.</footer>
 </div>
 
 <script>
-// ---------------- DATA ----------------
-// F1_rounds is no longer hardcoded here — it's fetched live from the calendar API
-// (see CALENDAR_API_BASE and loadCalendars() near the bottom of this script).
-let F1_rounds = [];
-const F1_records = [
-  {num:"0", who:"--", desc:"Most points this season"},
-  {num:"0", who:"--", desc:"Most race wins this season"},
-  {num:"--", who:"--", desc:"Tightest title margin"},
-  {num:"0", who:"--", desc:"Retirements (OUT) so far"},
-];
-// F1_drivers below is the fallback shown before the live API data loads
-// (or if the API is unreachable). loadCalendars() overwrites it with real
-// standings — points, wins, poles, penalties — once it fetches successfully.
-let F1_drivers = [
-  {pos:1, num:23, flag:"🇷🇴", name:"Mattix",        team:"Ferrari",      pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
-  {pos:2, num:95, flag:"🇷🇴", name:"Anroux",        team:"McLaren",      pts:0, dif:"--",  results:[null,null,null,null,null,null,null,null,null,null]},
-  {pos:3, num:28, flag:"🇺🇸", name:"Jountup",       team:"Toyota",       pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
-  {pos:4, num:6,  flag:"🇪🇸", name:"Reisa",         team:"Force India",  pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
-  {pos:5, num:37, flag:"🇮🇹", name:"Antony",        team:"McLaren",      pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
-  {pos:6, num:77, flag:"🇧🇬", name:"Martin Hristev", team:"Red Bull",    pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
-  {pos:7, num:76, flag:"🇪🇸", name:"robotic ray",   team:"Red Bull",     pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
-  {pos:8, num:11, flag:"🇵🇱", name:"eric",          team:"BMW Sauber",   pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
-  {pos:9, num:78, flag:"🇮🇹", name:"Amed Sylla",    team:"Williams",     pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
-  {pos:10,num:89, flag:"🇬🇧", name:"blue",          team:"Toro Rosso",   pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
-  {pos:11,num:16, flag:"🇮🇩", name:"Khrom",         team:"Renault",      pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
-  {pos:12,num:15, flag:"🇷🇸", name:"Cevap",         team:"Honda",        pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
-  {pos:13,num:13, flag:"🇨🇱", name:"Gamero",        team:"Force India",  pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
-  {pos:14,num:33, flag:"",   name:"BLACK",          team:"Ferrari",      pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
-  {pos:15,num:99, flag:"🇱🇻", name:"Arman",         team:"BMW Sauber",   pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null]},
-];
-
-const F1_history = [
-  {season:4, awards:[
-    {label:"WDC", value:"rice"},
-    {label:"WCC", value:"Toyota"},
-    {label:"Most Fastest Laps", value:"rice"},
-    {label:"Most Poles", value:"rice"},
-    {label:"Driver of the Day", value:"gamerogames"},
-    {label:"Most Positions Gained", value:"Mattix"},
-  ]},
-  {season:3, awards:[
-    {label:"WDC", value:"Lewis"},
-    {label:"WCC", value:"Toyota"},
-    {label:"Most Fastest Laps", value:"Lewis"},
-    {label:"Most Poles", value:"Lewis"},
-    {label:"Driver of the Day", value:"gamerogames / Mattix (Tie)"},
-    {label:"Most Positions Gained", value:"Mattix"},
-  ]},
-  {season:2, awards:[
-    {label:"WDC", value:"Velzxzzz"},
-    {label:"WCC", value:"Williams"},
-    {label:"Most Fastest Laps", value:"Velzxzzz"},
-    {label:"Most Poles", value:"Velzxzzz"},
-    {label:"Driver of the Day", value:"Velzxzzz"},
-    {label:"Most Positions Gained", value:"! Mithser_."},
-  ]},
-  {season:1, awards:[
-    {label:"WDC", value:"rice"},
-    {label:"WCC", value:"Toyota"},
-    {label:"Most Fastest Laps", value:"rice"},
-    {label:"Most Poles", value:"rice"},
-  ]},
-];
-
-// PF_rounds is no longer hardcoded here — it's fetched live from the calendar API.
-let PF_rounds = [
-  {rd:1,  flag:"🇦🇺", country:"Australia",    status:"upcoming"},
-  {rd:2,  flag:"🇨🇳", country:"China",        status:"upcoming"},
-  {rd:3,  flag:"🇯🇵", country:"Japan",        status:"upcoming"},
-  {rd:4,  flag:"🇰🇷", country:"South Korea",  status:"upcoming"},
-  {rd:5,  flag:"🇬🇧", country:"Great Britain", status:"upcoming"},
-  {rd:6,  flag:"🇮🇹", country:"Italy",        status:"upcoming"},
-  {rd:7,  flag:"🇳🇱", country:"Netherlands",  status:"upcoming"},
-  {rd:8,  flag:"🇧🇷", country:"Brazil",       status:"upcoming"},
-  {rd:9,  flag:"🇲🇾", country:"Malaysia",     status:"upcoming"},
-  {rd:10, flag:"🇦🇪", country:"Abu Dhabi",    status:"upcoming"},
-];
-const PF_records = [
-  {num:"0", who:"--", desc:"Most points this season"},
-  {num:"0", who:"--", desc:"Most race wins this season"},
-  {num:"--", who:"--", desc:"Tightest title margin"},
-  {num:"0", who:"--", desc:"Retirements (OUT) so far"},
-];
-let PF_drivers = [
-  {pos:1,  num:11, flag:"🇵🇱", name:"eric",       team:"McLaren",      pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
-  {pos:2,  num:15, flag:"🇷🇸", name:"Cevap",      team:"Aston Martin", pts:0, dif:"--",  results:[null,null,null,null,null,null,null,null,null,null,null,null]},
-  {pos:3,  num:47, flag:"🇬🇧", name:"Swept",      team:"Aston Martin", pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
-  {pos:4,  num:28, flag:"🇺🇸", name:"Jountup",    team:"Toro Rosso",   pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
-  {pos:5,  num:99, flag:"🇬🇧", name:"Jeffz",      team:"Red Bull",     pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
-  {pos:6,  num:78, flag:"🇮🇹", name:"Amed Sylla", team:"McLaren",      pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
-  {pos:7,  num:96, flag:"🇬🇧", name:"Stellar",    team:"Williams",     pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
-  {pos:8,  num:67, flag:"🇷🇴", name:"Mattix",     team:"Sauber",       pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
-  {pos:9,  num:37, flag:"🇮🇹", name:"Antony",     team:"Ferrari",      pts:0, dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
-  {pos:10, num:95, flag:"🇮🇹", name:"Arnoux",     team:"Ferrari",      pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
-  {pos:11, num:13, flag:"🇨🇱", name:"Gamero",     team:"Mercedes",     pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
-  {pos:12, num:5,  flag:"🇵🇱", name:"Khrom",      team:"Manor",        pts:0,  dif:"--", results:[null,null,null,null,null,null,null,null,null,null,null,null]},
-];
-
-// PF season history — send over the Season 1-4 award data and this will fill in the same way as F1.
-const PF_history = [];
-
-// ---------------- RENDER ----------------
-function renderCell(cell){
-  if(cell === null || cell === undefined) return '--';
-  if(cell === 'OUT') return '<span class="out">OUT</span>';
-  if(typeof cell === 'object'){
-    if(cell.p === 1) return `<span class="p1">${cell.v}</span>`;
-    if(cell.p === 2) return `<span class="p2">${cell.v}</span>`;
-    if(cell.p === 3) return `<span class="p3">${cell.v}</span>`;
-    return cell.v;
-  }
-  if(cell === '1') return '<span class="p1">1</span>';
-  if(cell === '2') return '<span class="p2">2</span>';
-  if(cell === '3') return '<span class="p3">3</span>';
-  return cell;
-}
-
-function renderCalendar(prefix, rounds){
-  document.getElementById(`${prefix}-cal-grid`).innerHTML = rounds.map(r => `
-    <div class="cal-item ${r.status}">
-      <div class="cal-rd">R${r.rd}</div>
-      <div class="cal-info"><span class="cal-flag">${r.flag}</span><span class="cal-country">${r.country}</span></div>
-    </div>
-  `).join('');
-}
-
-function renderRecords(prefix, records){
-  document.getElementById(`${prefix}-records-grid`).innerHTML = records.map(r => `
-    <div class="record-card">
-      <div class="num">${r.num}</div>
-      <div class="who">${r.who}</div>
-      <div class="desc">${r.desc}</div>
-    </div>
-  `).join('');
-}
-
-function renderDriverGrid(prefix, drivers, sortByPoints){
-  const roster = sortByPoints
-    ? [...drivers].sort((a, b) => (b.pts || 0) - (a.pts || 0))
-    : [...drivers].sort((a, b) => a.name.localeCompare(b.name));
-  document.getElementById(`${prefix}-driver-grid`).innerHTML = roster.map(d => `
-    <div class="driver-card">
-      <div class="dnum">#${d.num}</div>
-      <div class="dname">${d.flag} ${d.name}</div>
-      <div class="dteam">${d.team}</div>
-      ${d.pts !== undefined ? `<div class="dteam">${d.pts} pts${d.wins ? ` · ${d.wins}W` : ''}</div>` : ''}
-    </div>
-  `).join('');
-}
-
-function renderSeries(prefix, rounds, records, drivers){
-  renderCalendar(prefix, rounds);
-  renderRecords(prefix, records);
-  renderDriverGrid(prefix, drivers, false);
-}
-
-function renderHistory(prefix, history){
-  const el = document.getElementById(`${prefix}-history-grid`);
-  if(!history || history.length === 0){
-    el.innerHTML = `<div class="standings-note">Season history coming soon.</div>`;
-    return;
-  }
-  el.innerHTML = history.map(s => `
-    <div class="season-card">
-      <div class="shead"><div class="snum">S${s.season}</div><div class="slabel">Season ${s.season} Results</div></div>
-      <div class="award-list">
-        ${s.awards.map(a => `<div class="award-row"><span class="alabel">${a.label}</span><span class="avalue">${a.value}</span></div>`).join('')}
-      </div>
-    </div>
-  `).join('');
-}
-
-renderSeries('f1', F1_rounds, F1_records, F1_drivers);
-renderSeries('pf', PF_rounds, PF_records, PF_drivers);
-renderHistory('f1', F1_history);
-renderHistory('pf', PF_history);
-
-// ---------------- LIVE CALENDAR DATA ----------------
-// Point this at wherever you deploy the server/ folder from the
-// discord-calendar-bot project (Railway, Render, etc). Locally it's:
+// Where the live calendar/standings data comes from (your calendar-api-v2 server on Render).
 const CALENDAR_API_BASE = 'https://calendar-api-v2-2a22.onrender.com';
 
-function statsToRecordCards(stats){
+// ---------------- STARTING DATA ----------------
+// Shown until live data arrives, or if the API can't be reached.
+const STATE = {
+  f1: {
+    rounds: [
+      {rd:1,  flag:"🇦🇺", country:"Australia", status:"upcoming"},
+      {rd:2,  flag:"🇨🇳", country:"China",     status:"upcoming"},
+      {rd:3,  flag:"🇨🇦", country:"Canada",    status:"upcoming"},
+      {rd:4,  flag:"🇲🇨", country:"Monaco",    status:"upcoming"},
+      {rd:5,  flag:"🇧🇪", country:"Belgium",   status:"upcoming"},
+      {rd:6,  flag:"🇭🇺", country:"Hungary",   status:"upcoming"},
+      {rd:7,  flag:"🇮🇹", country:"Italy",     status:"upcoming"},
+      {rd:8,  flag:"🇸🇬", country:"Singapore", status:"upcoming"},
+      {rd:9,  flag:"🇺🇸", country:"USA",       status:"upcoming"},
+      {rd:10, flag:"🇩🇪", country:"Germany",   status:"upcoming"},
+    ],
+    drivers: [
+      {num:"23", flag:"🇷🇴", name:"Mattix",         team:"Ferrari"},
+      {num:"95", flag:"🇷🇴", name:"Anroux",         team:"McLaren"},
+      {num:"28", flag:"🇺🇸", name:"Jountup",        team:"Toyota"},
+      {num:"6",  flag:"🇪🇸", name:"Reisa",          team:"Force India"},
+      {num:"37", flag:"🇮🇹", name:"Antony",         team:"McLaren"},
+      {num:"77", flag:"🇧🇬", name:"Martin Hristev", team:"Red Bull"},
+      {num:"76", flag:"🇪🇸", name:"robotic ray",    team:"Red Bull"},
+      {num:"11", flag:"🇵🇱", name:"eric",           team:"BMW Sauber"},
+      {num:"78", flag:"🇮🇹", name:"Amed Sylla",     team:"Williams"},
+      {num:"89", flag:"🇬🇧", name:"blue",           team:"Toro Rosso"},
+      {num:"16", flag:"🇮🇩", name:"Khrom",          team:"Renault"},
+      {num:"15", flag:"🇷🇸", name:"Cevap",          team:"Honda"},
+      {num:"13", flag:"🇨🇱", name:"Gamero",         team:"Force India"},
+      {num:"33", flag:"",    name:"BLACK",          team:"Ferrari"},
+      {num:"99", flag:"🇱🇻", name:"Arman",          team:"BMW Sauber"},
+    ],
+    history: [
+      {season:4, awards:[
+        {label:"WDC", value:"rice"},
+        {label:"WCC", value:"Toyota"},
+        {label:"Most Fastest Laps", value:"rice"},
+        {label:"Most Poles", value:"rice"},
+        {label:"Driver of the Day", value:"gamerogames"},
+        {label:"Most Positions Gained", value:"Mattix"},
+      ]},
+      {season:3, awards:[
+        {label:"WDC", value:"Lewis"},
+        {label:"WCC", value:"Toyota"},
+        {label:"Most Fastest Laps", value:"Lewis"},
+        {label:"Most Poles", value:"Lewis"},
+        {label:"Driver of the Day", value:"gamerogames / Mattix (Tie)"},
+        {label:"Most Positions Gained", value:"Mattix"},
+      ]},
+      {season:2, awards:[
+        {label:"WDC", value:"Velzxzzz"},
+        {label:"WCC", value:"Williams"},
+        {label:"Most Fastest Laps", value:"Velzxzzz"},
+        {label:"Most Poles", value:"Velzxzzz"},
+        {label:"Driver of the Day", value:"Velzxzzz"},
+        {label:"Most Positions Gained", value:"! Mithser_."},
+      ]},
+      {season:1, awards:[
+        {label:"WDC", value:"rice"},
+        {label:"WCC", value:"Toyota"},
+        {label:"Most Fastest Laps", value:"rice"},
+        {label:"Most Poles", value:"rice"},
+      ]},
+    ],
+    records: null,
+  },
+  pf: {
+    rounds: [
+      {rd:1,  flag:"🇦🇺", country:"Australia",     status:"upcoming"},
+      {rd:2,  flag:"🇨🇳", country:"China",         status:"upcoming"},
+      {rd:3,  flag:"🇯🇵", country:"Japan",         status:"upcoming"},
+      {rd:4,  flag:"🇰🇷", country:"South Korea",   status:"upcoming"},
+      {rd:5,  flag:"🇬🇧", country:"Great Britain", status:"upcoming"},
+      {rd:6,  flag:"🇮🇹", country:"Italy",         status:"upcoming"},
+      {rd:7,  flag:"🇳🇱", country:"Netherlands",   status:"upcoming"},
+      {rd:8,  flag:"🇧🇷", country:"Brazil",        status:"upcoming"},
+      {rd:9,  flag:"🇲🇾", country:"Malaysia",      status:"upcoming"},
+      {rd:10, flag:"🇦🇪", country:"Abu Dhabi",     status:"upcoming"},
+    ],
+    drivers: [
+      {num:"11", flag:"🇵🇱", name:"eric",       team:"McLaren"},
+      {num:"15", flag:"🇷🇸", name:"Cevap",      team:"Aston Martin"},
+      {num:"47", flag:"🇬🇧", name:"Swept",      team:"Aston Martin"},
+      {num:"28", flag:"🇺🇸", name:"Jountup",    team:"Toro Rosso"},
+      {num:"99", flag:"🇬🇧", name:"Jeffz",      team:"Red Bull"},
+      {num:"78", flag:"🇮🇹", name:"Amed Sylla", team:"McLaren"},
+      {num:"96", flag:"🇬🇧", name:"Stellar",    team:"Williams"},
+      {num:"67", flag:"🇷🇴", name:"Mattix",     team:"Sauber"},
+      {num:"37", flag:"🇮🇹", name:"Antony",     team:"Ferrari"},
+      {num:"95", flag:"🇮🇹", name:"Arnoux",     team:"Ferrari"},
+      {num:"13", flag:"🇨🇱", name:"Gamero",     team:"Mercedes"},
+      {num:"5",  flag:"🇵🇱", name:"Khrom",      team:"Manor"},
+    ],
+    history: [],   // PF season history: send over the Season 1-4 awards and they'll show up the same way as F1.
+    records: null,
+  },
+};
+
+// ---------------- HELPERS ----------------
+const $ = id => document.getElementById(id);
+
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+const NUM_WORDS = ['Zero','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen','Twenty'];
+function numWord(n){ return n >= 0 && n < NUM_WORDS.length ? NUM_WORDS[n] : String(n); }
+
+function sortRounds(rounds){ return [...rounds].sort((a, b) => a.rd - b.rd); }
+
+// Team colours for the number tabs and constructor bars. First match wins, so order matters.
+const TEAM_COLORS = [
+  ['ferrari','#E80020'], ['mclaren','#FF8000'], ['toro rosso','#6692FF'], ['red bull','#3671C6'],
+  ['williams','#64C4FF'], ['toyota','#EDEDED'], ['force india','#F596C8'], ['bmw','#1C69D4'],
+  ['sauber','#B7C0CC'], ['renault','#FFD800'], ['honda','#6FCF97'], ['aston martin','#229971'],
+  ['mercedes','#27F4D2'], ['manor','#FF5C8A'],
+];
+function teamColor(team){
+  const t = String(team || '').toLowerCase();
+  for(const [key, color] of TEAM_COLORS){ if(t.includes(key)) return color; }
+  return '#8D8D95';
+}
+function inkFor(hex){
+  const n = parseInt(hex.slice(1), 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  const lin = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  return L > 0.18 ? '#15151E' : '#FFFFFF';
+}
+
+// Dates are stored as typed by the race host, e.g. "2026-09-20 18:00". Shown as typed, no timezone conversion.
+function parseRaceDate(str){
+  if(!str) return null;
+  const m = String(str).match(/(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T]+(\d{1,2}):(\d{2}))?/);
+  if(!m) return {day: String(str), time: ''};
+  const dt = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  const day = dt.toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short', timeZone:'UTC'});
+  return {day, time: m[4] !== undefined ? m[4].padStart(2, '0') + ':' + m[5] : ''};
+}
+
+// ---------------- RENDER ----------------
+function currentRound(rounds){
+  const sorted = sortRounds(rounds);
+  const live = sorted.find(r => r.status === 'live');
+  if(live) return {round: live, live: true};
+  const next = sorted.find(r => r.status === 'upcoming');
+  return next ? {round: next, live: false} : null;
+}
+
+function seasonLabel(rounds){
+  if(!rounds.length) return 'Season 5';
+  if(rounds.some(r => r.status === 'live')) return 'Season 5: race live now';
+  const done = rounds.filter(r => r.status === 'done').length;
+  if(done === rounds.length) return 'Season 5: complete';
+  if(done > 0) return 'Season 5: in progress';
+  return 'Season 5: starting soon';
+}
+
+function renderHero(prefix){
+  const s = STATE[prefix];
+  const total = s.rounds.length;
+  const done = s.rounds.filter(r => r.status === 'done').length;
+
+  $(`${prefix}-season-chip`).textContent = seasonLabel(s.rounds);
+  $(`${prefix}-hero-line`).textContent = `${numWord(total)} ${total === 1 ? 'round' : 'rounds'}.`;
+
+  $(`${prefix}-hero-meta`).innerHTML = `
+    <div class="stat"><b>${total}</b><span>Rounds</span></div>
+    <div class="stat"><b>${s.drivers.length}</b><span>Drivers</span></div>
+    <div class="stat"><b>${done}/${total}</b><span>Completed</span></div>
+  `;
+
+  const panel = $(`${prefix}-next-race`);
+  const cur = currentRound(s.rounds);
+  if(!cur){
+    panel.className = 'nextrace';
+    panel.innerHTML = total
+      ? `<div class="nr-label">Season complete</div>
+         <div class="nr-place"><span class="nr-flag">🏁</span><div class="nr-country">Checkered flag</div></div>
+         <p class="nr-wrap">All ${total} rounds are done. Final standings are below.</p>`
+      : '';
+    return;
+  }
+  const r = cur.round;
+  const when = parseRaceDate(r.date);
+  panel.className = 'nextrace' + (cur.live ? ' live' : '');
+  panel.innerHTML = `
+    <div class="nr-label">${cur.live ? '<span class="chip chip-live"><i class="dot"></i>Live now</span>' : 'Next race'}</div>
+    <div class="nr-place"><span class="nr-flag">${esc(r.flag)}</span><div class="nr-country">${esc(r.country)}</div></div>
+    <div class="nr-round">Round ${esc(r.rd)} of ${total}</div>
+    <div class="nr-when">${
+      when ? `<strong>${esc(when.day)}</strong><span>${esc(when.time)}</span>`
+           : `<span>${cur.live ? 'Racing right now' : 'Date to be announced'}</span>`
+    }</div>
+  `;
+}
+
+function renderCalendar(prefix){
+  const rounds = sortRounds(STATE[prefix].rounds);
+  const cur = currentRound(rounds);
+  const nextRd = cur && !cur.live ? cur.round.rd : null;
+
+  $(`${prefix}-cal-grid`).innerHTML = rounds.map(r => {
+    const when = parseRaceDate(r.date);
+    const whenText = when ? (when.time ? `${when.day}, ${when.time}` : when.day) : '';
+    let chip;
+    if(r.status === 'live') chip = '<span class="chip chip-live"><i class="dot"></i>Live</span>';
+    else if(r.status === 'done') chip = '<span class="chip chip-done"><i class="chk"></i>Finished</span>';
+    else if(r.rd === nextRd) chip = '<span class="chip chip-next">Next</span>';
+    else chip = '<span class="chip">Upcoming</span>';
+    return `
+      <article class="race ${esc(r.status)}${r.rd === nextRd ? ' next' : ''}">
+        <div class="race-rd">R${esc(r.rd)}</div>
+        <div class="race-body">
+          <div class="race-place"><span class="flag">${esc(r.flag)}</span><span class="country">${esc(r.country)}</span></div>
+          ${whenText ? `<div class="race-when">${esc(whenText)}</div>` : ''}
+        </div>
+        <div class="race-status">${chip}</div>
+      </article>`;
+  }).join('');
+}
+
+function statsToRecordCards(st){
   return [
-    { num: stats.wdcLeader ? stats.wdcLeader.pts : '0', who: stats.wdcLeader ? stats.wdcLeader.name : '--', desc: 'Most points this season' },
-    { num: stats.mostWins ? stats.mostWins.wins : '0', who: stats.mostWins ? stats.mostWins.name : '--', desc: 'Most race wins this season' },
-    { num: stats.marginTop2 !== null ? stats.marginTop2 : '--', who: '', desc: 'Tightest title margin' },
-    { num: stats.retirements, who: '--', desc: 'Retirements (OUT) so far' },
+    {desc:'Most points this season', num: st.wdcLeader ? st.wdcLeader.pts : 0, who: st.wdcLeader ? st.wdcLeader.name : 'Not set yet'},
+    {desc:'Most race wins',          num: st.mostWins ? st.mostWins.wins : 0,   who: st.mostWins ? st.mostWins.name : 'Not set yet'},
+    {desc:'Tightest title margin',   num: st.marginTop2 != null ? st.marginTop2 : '--', who: st.marginTop2 != null ? 'points, P1 to P2' : 'Not set yet'},
+    {desc:'Retirements so far',      num: st.retirements || 0, who: ''},
   ];
 }
 
-async function loadSeries(prefix, calendar){
-  const [rounds, drivers, stats] = await Promise.all([
-    fetch(`${CALENDAR_API_BASE}/api/calendars/${calendar}/rounds`).then(r => r.json()),
-    fetch(`${CALENDAR_API_BASE}/api/calendars/${calendar}/drivers`).then(r => r.json()),
-    fetch(`${CALENDAR_API_BASE}/api/calendars/${calendar}/stats`).then(r => r.json()),
-  ]);
-  if(prefix === 'f1'){ F1_rounds = rounds; F1_drivers = drivers; }
-  else { PF_rounds = rounds; PF_drivers = drivers; }
-  renderCalendar(prefix, rounds);
-  renderDriverGrid(prefix, drivers, true); // true = sort by points (live standings order)
-  renderRecords(prefix, statsToRecordCards(stats));
+function renderRecords(prefix){
+  const s = STATE[prefix];
+  const cards = s.records || statsToRecordCards({wdcLeader:null, mostWins:null, marginTop2:null, retirements:0});
+  $(`${prefix}-records-grid`).innerHTML = cards.map(r => `
+    <div class="record">
+      <div class="rlabel">${esc(r.desc)}</div>
+      <div class="rnum">${esc(r.num)}</div>
+      <div class="rwho">${esc(r.who)}</div>
+    </div>
+  `).join('');
 }
 
-async function loadCalendars(){
-  try{
-    await Promise.all([loadSeries('f1', 'f1'), loadSeries('pf', 'pf')]);
-  }catch(err){
-    // API unreachable (not deployed yet, wrong URL, server asleep, etc) —
-    // the page keeps working with the placeholder data, it just won't show live updates.
-    console.warn('Could not load live calendar/standings data:', err);
+function renderStandings(prefix){
+  const list = STATE[prefix].drivers.map(d => ({
+    ...d, pts: Number(d.pts) || 0, wins: Number(d.wins) || 0,
+  }));
+  list.sort((a, b) => b.pts - a.pts || b.wins - a.wins || String(a.name).localeCompare(String(b.name)));
+  const started = list.some(d => d.pts > 0);
+
+  // Drivers
+  let rank = 0, prev = null;
+  const driverRows = list.map((d, i) => {
+    if(!prev || d.pts !== prev.pts || d.wins !== prev.wins) rank = i + 1;
+    prev = d;
+    const color = teamColor(d.team);
+    const lead = started && rank === 1;
+    const meta = esc(d.team) + (d.wins ? `, ${d.wins} ${d.wins === 1 ? 'win' : 'wins'}` : '');
+    return `
+      <li class="trow${lead ? ' lead' : ''}" style="--team:${color};--on-team:${inkFor(color)}">
+        <span class="pos">${started ? rank : '–'}</span>
+        <span class="numtab">${esc(d.num)}</span>
+        <span class="who"><span class="nm">${d.flag ? esc(d.flag) + ' ' : ''}${esc(d.name)}</span><span class="tm">${meta}</span></span>
+        <span class="pts">${d.pts}<small>pts</small></span>
+      </li>`;
+  }).join('');
+  $(`${prefix}-driver-grid`).innerHTML =
+    `<ol class="tower">${driverRows}</ol>` +
+    (started ? '' : '<p class="tower-note">Standings start after Round 1.</p>');
+
+  // Constructors
+  const teams = {};
+  list.forEach(d => {
+    const key = d.team || 'Independent';
+    if(!teams[key]) teams[key] = {team: key, pts: 0, wins: 0, names: []};
+    teams[key].pts += d.pts;
+    teams[key].wins += d.wins;
+    teams[key].names.push(d.name);
+  });
+  const teamList = Object.values(teams).sort((a, b) => b.pts - a.pts || b.wins - a.wins || a.team.localeCompare(b.team));
+  let trank = 0, tprev = null;
+  $(`${prefix}-team-grid`).innerHTML = '<ol class="tower">' + teamList.map((t, i) => {
+    if(!tprev || t.pts !== tprev.pts || t.wins !== tprev.wins) trank = i + 1;
+    tprev = t;
+    const color = teamColor(t.team);
+    const lead = started && trank === 1;
+    return `
+      <li class="trow${lead ? ' lead' : ''}" style="--team:${color};--on-team:${inkFor(color)}">
+        <span class="pos">${started ? trank : '–'}</span>
+        <span class="numtab"></span>
+        <span class="who"><span class="nm">${esc(t.team)}</span><span class="tm">${esc(t.names.join(', '))}</span></span>
+        <span class="pts">${t.pts}<small>pts</small></span>
+      </li>`;
+  }).join('') + '</ol>';
+}
+
+function renderHistory(prefix){
+  const history = STATE[prefix].history;
+  const el = $(`${prefix}-history-grid`);
+  if(!history || history.length === 0){
+    el.innerHTML = '<p class="empty">Season history coming soon.</p>';
+    return;
   }
+  const isChamp = a => a.label === 'WDC' || a.label === 'WCC';
+  el.innerHTML = history.map(s => {
+    const champs = s.awards.filter(isChamp);
+    const rest = s.awards.filter(a => !isChamp(a));
+    return `
+      <article class="season">
+        <div class="season-id"><b>S${esc(s.season)}</b><span>Season ${esc(s.season)}</span></div>
+        <div class="season-body">
+          ${champs.length ? `<div class="champs">${champs.map(a => `
+            <div class="champ${a.label === 'WCC' ? ' wcc' : ''}">
+              <small>${a.label === 'WDC' ? "Drivers' champion" : "Constructors' champion"}</small>
+              <strong>${esc(a.value)}</strong>
+            </div>`).join('')}</div>` : ''}
+          <div class="awards">${rest.map(a => `<div class="award"><span>${esc(a.label)}</span><b>${esc(a.value)}</b></div>`).join('')}</div>
+        </div>
+      </article>`;
+  }).join('');
 }
 
-loadCalendars();
+function renderHome(){
+  ['f1', 'pf'].forEach(p => {
+    $(`home-${p}-rounds`).textContent = STATE[p].rounds.length;
+    $(`home-${p}-drivers`).textContent = STATE[p].drivers.length;
+  });
+}
 
-document.querySelectorAll('.navlinks button').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.getElementById(btn.dataset.scroll).scrollIntoView({behavior:'smooth'});
+function renderAll(prefix){
+  renderHero(prefix);
+  renderCalendar(prefix);
+  renderRecords(prefix);
+  renderStandings(prefix);
+  renderHistory(prefix);
+  renderHome();
+}
+
+function setSync(prefix, state){
+  const el = $(`${prefix}-sync`);
+  el.dataset.state = state;
+  el.querySelector('span').textContent =
+    state === 'live' ? 'Live data' :
+    state === 'offline' ? 'Live data unavailable. Showing the starting lineup.' :
+    'Connecting to live data…';
+}
+
+// ---------------- LIVE DATA ----------------
+async function getJSON(path){
+  const res = await fetch(CALENDAR_API_BASE + path);
+  if(!res.ok) throw new Error(`${path} returned ${res.status}`);
+  return res.json();
+}
+
+async function loadSeries(prefix){
+  const [rounds, drivers, stats] = await Promise.all([
+    getJSON(`/api/calendars/${prefix}/rounds`),
+    getJSON(`/api/calendars/${prefix}/drivers`),
+    getJSON(`/api/calendars/${prefix}/stats`),
+  ]);
+  const s = STATE[prefix];
+  s.rounds = rounds;
+  s.drivers = drivers;
+  s.records = statsToRecordCards(stats);
+  renderAll(prefix);
+  setSync(prefix, 'live');
+}
+
+let loadAttempts = 0;
+async function loadCalendars(){
+  loadAttempts++;
+  const prefixes = ['f1', 'pf'];
+  const results = await Promise.allSettled(prefixes.map(loadSeries));
+  let failed = false;
+  results.forEach((r, i) => {
+    if(r.status === 'rejected'){
+      failed = true;
+      console.warn('Could not load live data for', prefixes[i], r.reason);
+      setSync(prefixes[i], 'offline');
+    }
+  });
+  // A sleeping free-tier server can take ~a minute to wake up, so try a couple more times.
+  if(failed && loadAttempts < 3) setTimeout(loadCalendars, 20000);
+}
+
+// ---------------- NAVIGATION ----------------
+document.querySelectorAll('.navlinks button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $(btn.dataset.scroll).scrollIntoView({behavior:'smooth'});
   });
 });
 
-
 function showView(name){
-  document.getElementById('view-home').classList.toggle('hidden', name !== 'home');
-  document.getElementById('view-f1').classList.toggle('hidden', name !== 'f1');
-  document.getElementById('view-pf').classList.toggle('hidden', name !== 'pf');
-  window.scrollTo(0,0);
+  $('view-home').classList.toggle('hidden', name !== 'home');
+  $('view-f1').classList.toggle('hidden', name !== 'f1');
+  $('view-pf').classList.toggle('hidden', name !== 'pf');
+  window.scrollTo(0, 0);
 }
 
+// ---------------- START ----------------
+renderAll('f1');
+renderAll('pf');
 showView('home');
+loadCalendars();
 </script>
 
 </body>
