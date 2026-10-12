@@ -52,8 +52,12 @@ setInterval(() => {
 
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
+  console.log(`[command] /${interaction.commandName} received from ${interaction.user.tag} (${Date.now() - interaction.createdTimestamp}ms after Discord sent it)`);
   const command = client.commands.get(interaction.commandName);
-  if (!command) return;
+  if (!command) {
+    console.error(`[command] No handler found for /${interaction.commandName}`);
+    return;
+  }
 
   // Discord only gives a command 3 seconds to respond. The API server on a free host can
   // take 30-50 seconds to wake up, which used to cause "The application did not respond".
@@ -61,6 +65,7 @@ client.on('interactionCreate', async (interaction) => {
   // command's normal reply() is turned into the final answer.
   try {
     await interaction.deferReply();
+    console.log(`[command] /${interaction.commandName} deferred OK`);
   } catch (err) {
     console.error('Could not defer (interaction probably expired):', err);
     return;
@@ -78,6 +83,7 @@ client.on('interactionCreate', async (interaction) => {
 
   try {
     await command.execute(interaction);
+    console.log(`[command] /${interaction.commandName} finished`);
   } catch (err) {
     console.error(err);
     await interaction.reply({ content: 'There was an error running that command.', ephemeral: true }).catch(() => {});
