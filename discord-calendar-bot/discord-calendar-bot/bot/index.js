@@ -55,16 +55,32 @@ client.on('interactionCreate', async (interaction) => {
   const command = client.commands.get(interaction.commandName);
   if (!command) return;
 
+  // Discord only gives a command 3 seconds to respond. The API server on a free host can
+  // take 30-50 seconds to wake up, which used to cause "The application did not respond".
+  // So we immediately tell Discord "working on it" (buys us 15 minutes), and then every
+  // command's normal reply() is turned into the final answer.
+  try {
+    await interaction.deferReply();
+  } catch (err) {
+    console.error('Could not defer (interaction probably expired):', err);
+    return;
+  }
+
+  interaction.reply = async (opts) => {
+    const payload = typeof opts === 'string' ? { content: opts } : { ...opts };
+    if (payload.ephemeral) {
+      // A deferred reply can't be made private after the fact, so swap it for a private follow-up.
+      await interaction.deleteReply().catch(() => {});
+      return interaction.followUp(payload);
+    }
+    return interaction.editReply(payload);
+  };
+
   try {
     await command.execute(interaction);
   } catch (err) {
     console.error(err);
-    const payload = { content: 'There was an error running that command.', ephemeral: true };
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp(payload);
-    } else {
-      await interaction.reply(payload);
-    }
+    await interaction.reply({ content: 'There was an error running that command.', ephemeral: true }).catch(() => {});
   }
 });
 
